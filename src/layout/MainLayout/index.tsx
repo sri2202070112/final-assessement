@@ -5,33 +5,44 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 
 export default function MainLayout() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+    setOpen(!open);
   };
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Top Header */}
-      <Header open={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
+      <Header open={open} handleDrawerToggle={handleDrawerToggle} />
 
       {/* Left Sidebar Navigation */}
-      <Sidebar open={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
+      <Sidebar open={open} handleDrawerToggle={handleDrawerToggle} />
 
       {/* Main Content Area */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - 260px)` },
-          minHeight: '100vh',
-          backgroundColor: 'background.default'
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: 'background.default',
+          overflow: 'hidden' // Main should not scroll, only the content box
         }}
       >
         <Toolbar /> {/* To provide spacing for the fixed Header */}
-        <Outlet />
+        <Box 
+          sx={{ 
+            flexGrow: 1, 
+            overflowY: 'auto',
+            p: 3,
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

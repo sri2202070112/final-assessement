@@ -1,7 +1,7 @@
 import { useRoutes, Navigate } from 'react-router-dom';
 import MainLayout from '../layout/MainLayout';
 import MinimalLayout from '../layout/MinimalLayout';
-import Login from '../pages/Auth/Login';
+import Login from '../pages/Auth/Auth';
 import Dashboard from '../pages/Dashboard';
 import TransactionReport from '../pages/TransactionReport';
 import QrDetails from '../pages/QrDetails';

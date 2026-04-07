@@ -10,7 +10,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, width: '100%' }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
         Dashboard Overview
       </Typography>
@@ -43,7 +43,7 @@ export default function Dashboard() {
                 Revenue Trend
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', backgroundColor: '#fafafa', borderRadius: 2 }}>
-                 <Typography color="textSecondary">Chart Placeholder</Typography>
+                <Typography color="textSecondary">Chart Placeholder</Typography>
               </Box>
             </CardContent>
           </Card>
@@ -56,7 +56,7 @@ export default function Dashboard() {
                 Recent Activity
               </Typography>
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', backgroundColor: '#fafafa', borderRadius: 2 }}>
-                 <Typography color="textSecondary">Activity Feed Placeholder</Typography>
+                <Typography color="textSecondary">Activity Feed Placeholder</Typography>
               </Box>
             </CardContent>
           </Card>
