@@ -1,13 +1,13 @@
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Radio, 
-  RadioGroup, 
-  FormControlLabel, 
-  FormControl, 
-  TextField, 
-  InputAdornment, 
+import {
+  Box,
+  Typography,
+  Paper,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  TextField,
+  InputAdornment,
   Button,
   Table,
   TableBody,
@@ -21,7 +21,7 @@ import {
   Chip,
   IconButton
 } from '@mui/material';
-import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Download, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { COLORS } from '../../theme/color';
 
@@ -38,12 +38,12 @@ export default function TransactionReport() {
   const [page, setPage] = useState(6); // As per screenshot
 
   return (
-    <Box sx={{ 
-      width: '100%', 
-      height: '100vh', 
+    <Box sx={{
+      width: '100%',
+      height: '100vh',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: '#f8f9fa', 
+      backgroundColor: '#f8f9fa',
       p: 2,
       boxSizing: 'border-box',
       overflow: 'hidden'
@@ -54,10 +54,10 @@ export default function TransactionReport() {
       </Typography>
 
       {/* Filter Card */}
-      <Paper elevation={0} sx={{ 
-        p: 1.5, 
-        mb: 1.5, 
-        borderRadius: '8px', 
+      <Paper elevation={0} sx={{
+        p: 2,
+        mb: 2,
+        borderRadius: '8px',
         border: '1px solid #f0f0f0',
         backgroundColor: '#fff',
         flexShrink: 0
@@ -70,83 +70,212 @@ export default function TransactionReport() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         >
-          <FormControlLabel 
-            value="Today" 
-            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />} 
-            label={<Typography sx={{ fontSize: '0.8rem' }}>Today</Typography>} 
+          <FormControlLabel
+            value="Today"
+            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />}
+            label={<Typography sx={{ fontSize: '0.8rem' }}>Today</Typography>}
           />
-          <FormControlLabel 
-            value="Monthly" 
-            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />} 
-            label={<Typography sx={{ fontSize: '0.8rem' }}>Monthly</Typography>} 
+          <FormControlLabel
+            value="Monthly"
+            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />}
+            label={<Typography sx={{ fontSize: '0.8rem' }}>Monthly</Typography>}
           />
-          <FormControlLabel 
-            value="Custom Range" 
-            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />} 
-            label={<Typography sx={{ fontSize: '0.8rem' }}>Custom Range</Typography>} 
+          <FormControlLabel
+            value="Custom Range"
+            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />}
+            label={<Typography sx={{ fontSize: '0.8rem' }}>Custom Range</Typography>}
           />
         </RadioGroup>
+
+        {/* Conditional Monthly Filter Section */}
+        {filter === 'Monthly' && (
+          <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f0f0f0' }}>
+            <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>
+              Monthly
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Select
+                defaultValue="Last Month's Report"
+                size="small"
+                sx={{
+                  width: 240,
+                  height: 40,
+                  fontSize: '0.85rem',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' }
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      '& .MuiMenuItem-root': {
+                        fontSize: '0.85rem',
+                        '&:hover': { backgroundColor: '#f5eef1' },
+                        '&.Mui-selected': { backgroundColor: '#f5eef1', color: COLORS.PRIMARY, '&:hover': { backgroundColor: '#f5eef1' } }
+                      }
+                    }
+                  }
+                }}
+              >
+                <MenuItem value="Last Month's Report">Last Month's Report</MenuItem>
+                <MenuItem value="Last 3 month's Report">Last 3 month's Report</MenuItem>
+                <MenuItem value="Last 6 month's Report">Last 6 month's Report</MenuItem>
+                <MenuItem value="Last 12 month's Report">Last 12 month's Report</MenuItem>
+              </Select>
+              <Button
+                variant="contained"
+                disableElevation
+                sx={{
+                  backgroundColor: COLORS.PRIMARY,
+                  color: '#fff',
+                  textTransform: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  height: 40,
+                  px: 3,
+                  borderRadius: '6px',
+                  '&:hover': { backgroundColor: '#8B1434' }
+                }}
+              >
+                Submit
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {/* Conditional Custom Range Filter Section */}
+        {filter === 'Custom Range' && (
+          <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f0f0f0' }}>
+            <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end' }}>
+              <Box>
+                <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>
+                  Start Date
+                </Typography>
+                <TextField
+                  placeholder="DD/MM/YYYY"
+                  size="small"
+                  sx={{
+                    width: 220,
+                    '& .MuiOutlinedInput-root': { height: 40, fontSize: '0.85rem' }
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Calendar size={18} color="#9ca3af" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+              <Box>
+                <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>
+                  End Date
+                </Typography>
+                <TextField
+                  placeholder="DD/MM/YYYY"
+                  size="small"
+                  sx={{
+                    width: 220,
+                    '& .MuiOutlinedInput-root': { height: 40, fontSize: '0.85rem' }
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Calendar size={18} color="#9ca3af" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+              <Button
+                variant="contained"
+                disableElevation
+                sx={{
+                  backgroundColor: COLORS.PRIMARY,
+                  color: '#fff',
+                  textTransform: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: 500,
+                  height: 40,
+                  px: 4,
+                  borderRadius: '6px',
+                  '&:hover': { backgroundColor: '#8B1434' }
+                }}
+              >
+                Submit
+              </Button>
+            </Box>
+          </Box>
+        )}
       </Paper>
 
-      {/* Table Actions */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexShrink: 0 }}>
-        <TextField
-          placeholder="Search here..."
-          size="small"
-          sx={{ 
-            width: 260,
-            '& .MuiOutlinedInput-root': {
-              height: 32,
-              borderRadius: '4px',
-              backgroundColor: '#fff',
-              fontSize: '0.85rem',
-              '& fieldset': { borderColor: '#d9d9d9' }
-            }
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search size={16} color="#999" />
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<Download size={16} />}
-          disableElevation
-          sx={{
-            backgroundColor: COLORS.PRIMARY,
-            color: '#fff',
-            textTransform: 'none',
-            fontSize: '0.85rem',
-            height: 32,
-            px: 2,
-            '&:hover': {
-              backgroundColor: '#7A122E'
-            }
-          }}
-        >
-          Download
-        </Button>
-      </Box>
-
-      {/* Table Section */}
-      <TableContainer component={Paper} elevation={0} sx={{ 
-        borderRadius: '8px', 
-        border: '1px solid #f0f0f0',
-        backgroundColor: '#fff',
+      {/* Main Unified Table Card */}
+      <Paper elevation={0} sx={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
+        borderRadius: '8px',
+        border: '1px solid #f0f0f0',
+        backgroundColor: '#fff',
         overflow: 'hidden'
       }}>
+
+        {/* Table Actions Section */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+          <TextField
+            placeholder="Search here..."
+            size="small"
+            sx={{
+              width: 280,
+              '& .MuiOutlinedInput-root': {
+                height: 40,
+                borderRadius: '6px',
+                backgroundColor: '#fff',
+                fontSize: '0.9rem',
+                '& fieldset': { borderColor: '#E5E7EB' },
+                '&:hover fieldset': { borderColor: '#D1D5DB' },
+                '&.Mui-focused fieldset': { borderColor: '#9E173B', borderWidth: '1px' },
+              },
+              '& .MuiOutlinedInput-input::placeholder': {
+                color: '#9CA3AF',
+                opacity: 1,
+              }
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={18} color="#9CA3AF" strokeWidth={2} />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<Download size={18} strokeWidth={2.5} />}
+            disableElevation
+            sx={{
+              backgroundColor: COLORS.PRIMARY,
+              color: '#fff',
+              textTransform: 'none',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              height: 40,
+              px: 2.5,
+              borderRadius: '6px',
+              '&:hover': {
+                backgroundColor: '#8B1434'
+              }
+            }}
+          >
+            Download
+          </Button>
+        </Box>
+
+        {/* Table Section */}
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
           <Table stickyHeader sx={{ minWidth: 700 }}>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 500, color: '#8c8c8c', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     S. No.
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -155,7 +284,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#8c8c8c', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Transaction ID
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -164,7 +293,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#8c8c8c', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     RRN Number
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -173,8 +302,8 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#8c8c8c', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <TableCell align="right" sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
                     Amount
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
                       <Typography sx={{ fontSize: '7px', color: '#bfbfbf' }}>▲</Typography>
@@ -182,7 +311,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#8c8c8c', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Date
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -191,7 +320,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#8c8c8c', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Status
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -208,20 +337,21 @@ export default function TransactionReport() {
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.id}</TableCell>
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.txnId}</TableCell>
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.rrn}</TableCell>
-                  <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.amount}</TableCell>
+                  <TableCell align="right" sx={{ color: '#262626', fontSize: '0.8rem', fontWeight: 600, py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.amount}</TableCell>
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.date}</TableCell>
                   <TableCell sx={{ py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
-                    <Chip 
-                      label={row.status} 
+                    <Chip
+                      label={row.status}
                       size="small"
-                      sx={{ 
-                        backgroundColor: '#F6FFED', 
+                      sx={{
+                        backgroundColor: '#F6FFED',
                         color: '#52C41A',
                         fontWeight: 500,
-                        borderRadius: '2px',
+                        borderRadius: '999px',
                         fontSize: '0.7rem',
-                        height: 20
-                      }} 
+                        height: 22,
+                        px: 1
+                      }}
                     />
                   </TableCell>
                 </TableRow>
@@ -230,12 +360,12 @@ export default function TransactionReport() {
           </Table>
         </Box>
 
-        {/* Custom Pagination */}
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          p: '12px 16px', 
+        {/* Custom Pagination Section */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: '12px 16px',
           borderTop: '1px solid #f0f0f0',
           backgroundColor: '#fff'
         }}>
@@ -245,8 +375,8 @@ export default function TransactionReport() {
               value={rowsPerPage}
               size="small"
               onChange={(e) => setRowsPerPage(Number(e.target.value))}
-              sx={{ 
-                height: 28, 
+              sx={{
+                height: 28,
                 fontSize: '0.8rem',
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' }
               }}
@@ -256,11 +386,11 @@ export default function TransactionReport() {
               <MenuItem value={50}>50</MenuItem>
             </Select>
             <Typography variant="body2" sx={{ color: '#8c8c8c', fontSize: '0.8rem', ml: 1 }}>Go to</Typography>
-            <TextField 
+            <TextField
               size="small"
               value={page}
               onChange={(e) => setPage(Number(e.target.value))}
-              sx={{ 
+              sx={{
                 width: 38,
                 '& .MuiOutlinedInput-root': {
                   height: 28,
@@ -274,7 +404,7 @@ export default function TransactionReport() {
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <IconButton size="small" sx={{ width: 28, height: 28, borderRadius: '4px', border: '1px solid #f0f0f0', color: '#d9d9d9' }}>
-               <ChevronLeft size={14} />
+              <ChevronLeft size={14} />
             </IconButton>
             <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>1</Button>
             <Typography sx={{ color: '#d9d9d9', px: 0.5, fontSize: '0.8rem' }}>...</Typography>
@@ -286,11 +416,11 @@ export default function TransactionReport() {
             <Typography sx={{ color: '#d9d9d9', px: 0.5, fontSize: '0.8rem' }}>...</Typography>
             <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>50</Button>
             <IconButton size="small" sx={{ width: 28, height: 28, borderRadius: '4px', border: '1px solid #f0f0f0', color: '#262626' }}>
-               <ChevronRight size={14} />
+              <ChevronRight size={14} />
             </IconButton>
           </Box>
         </Box>
-      </TableContainer>
+      </Paper>
     </Box>
   );
 }
