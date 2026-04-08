@@ -35,11 +35,13 @@ export default function Dashboard() {
 
   return (
     <Box
+      id="dashboard-isolation-layer"
       sx={{
         width: '100%',
         minHeight: '100vh',
         backgroundColor: '#f8f9fa',
-        pt: '24px',
+        isolation: 'isolate',
+        pt: '2px',
         px: '32px',
         boxSizing: 'border-box'
       }}
@@ -47,18 +49,18 @@ export default function Dashboard() {
       {/* Header Section */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 1.5 }}>
         <Box>
-          <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.25rem', mb: 0.5 }}>
+          <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.25rem', mb: 3.5 }}>
             Dashboard
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: '20px' }}>
             <Typography variant="body2" sx={{ color: '#666', fontWeight: 600 }}>
               VPA ID :
             </Typography>
-            <Box 
+            <Box
               onClick={(e) => setAnchorEl(e.currentTarget)}
-              sx={{ 
-                display: 'inline-flex', 
-                alignItems: 'center', 
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
                 gap: 1.5,
                 border: '1px solid #d9d9d9',
                 borderRadius: '4px',
@@ -77,11 +79,11 @@ export default function Dashboard() {
           </Box>
         </Box>
 
-        <Box 
+        <Box
           onClick={(e) => setTimeAnchorEl(e.currentTarget)}
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
             gap: 1,
             border: '1px solid #e0e0e0',
             borderRadius: '4px',
@@ -106,13 +108,13 @@ export default function Dashboard() {
       <Grid container spacing={3}>
         {/* Total Transactions Card */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card 
-            elevation={0} 
-            sx={{ 
+          <Card
+            elevation={0}
+            sx={{
               width: '552px',
               maxWidth: '100%',
               height: '100px',
-              borderRadius: '12px', 
+              borderRadius: '12px',
               border: '1px solid #f0f0f0',
               display: 'flex',
               alignItems: 'center',
@@ -123,13 +125,13 @@ export default function Dashboard() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ 
-                width: 44, 
-                height: 44, 
-                borderRadius: '10px', 
-                backgroundColor: '#f0f5ff', 
-                display: 'flex', 
-                alignItems: 'center', 
+              <Box sx={{
+                width: 44,
+                height: 44,
+                borderRadius: '10px',
+                backgroundColor: '#f0f5ff',
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
                 mr: 2
               }}>
@@ -147,13 +149,13 @@ export default function Dashboard() {
 
         {/* Total Amount Card */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card 
-            elevation={0} 
-            sx={{ 
+          <Card
+            elevation={0}
+            sx={{
               width: '552px',
               maxWidth: '100%',
               height: '100px',
-              borderRadius: '12px', 
+              borderRadius: '12px',
               border: '1px solid #f0f0f0',
               display: 'flex',
               alignItems: 'center',
@@ -164,20 +166,20 @@ export default function Dashboard() {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ 
-                width: 44, 
-                height: 44, 
-                borderRadius: '10px', 
-                backgroundColor: '#f0f5ff', 
-                display: 'flex', 
-                alignItems: 'center', 
+              <Box sx={{
+                width: 44,
+                height: 44,
+                borderRadius: '10px',
+                backgroundColor: '#f0f5ff',
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
                 mr: 2
               }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="2" y="5" width="20" height="14" rx="3" stroke="#9E173B" strokeWidth="2" strokeLinejoin="round"/>
-                  <circle cx="12" cy="12" r="3" stroke="#9E173B" strokeWidth="2"/>
-                  <path d="M 6 5 C 6 7.209 4.209 9 2 9 M 18 5 C 18 7.209 19.791 9 22 9 M 6 19 C 6 16.791 4.209 15 2 15 M 18 19 C 18 16.791 19.791 15 22 15" stroke="#9E173B" strokeWidth="2" strokeLinecap="round"/>
+                  <rect x="2" y="5" width="20" height="14" rx="3" stroke="#9E173B" strokeWidth="2" strokeLinejoin="round" />
+                  <circle cx="12" cy="12" r="3" stroke="#9E173B" strokeWidth="2" />
+                  <path d="M 6 5 C 6 7.209 4.209 9 2 9 M 18 5 C 18 7.209 19.791 9 22 9 M 6 19 C 6 16.791 4.209 15 2 15 M 18 19 C 18 16.791 19.791 15 22 15" stroke="#9E173B" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>

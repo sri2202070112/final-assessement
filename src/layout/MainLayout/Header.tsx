@@ -91,13 +91,14 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
           PaperProps={{
             elevation: 0,
             sx: {
-              mt: 1,
-              ml: -5.5, // Nudged right even more
+              mt: '3px',
+              ml: -3.5, // Maintain latest user-defined position
               width: 140,
-              height: 84,
-              borderRadius: '4px',
-              padding: '12px 16px',
+              height: 98,
+              borderRadius: '6px',
+              padding: '16px',
               boxSizing: 'border-box',
+              paddingRight: '130px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
@@ -107,7 +108,7 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
                 padding: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px'
+                gap: '12px'
               }
             }
           }}
