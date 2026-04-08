@@ -11,11 +11,11 @@ export default function LanguageUpdate() {
         Language Update
       </Typography>
 
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: '32px 24px', 
-          borderRadius: '4px', 
+      <Paper
+        elevation={0}
+        sx={{
+          p: '32px 24px',
+          borderRadius: '4px',
           border: '1px solid #f0f0f0',
           backgroundColor: '#fff',
           maxWidth: '100%'
@@ -23,8 +23,7 @@ export default function LanguageUpdate() {
       >
         <Grid container spacing={2}>
           {/* Main Row with 4 inputs */}
-          {/* <Grid item xs={12} sm={6} md={3}> */}
-          <Grid size={{xs:12,sm:6,md:6}}>
+          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Box>
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 VPA ID
@@ -48,7 +47,7 @@ export default function LanguageUpdate() {
               />
             </Box>
           </Grid>
-          <Grid size={{xs:12,sm:6,md:6}}>
+          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Box>
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 Device Serial Number
@@ -72,7 +71,7 @@ export default function LanguageUpdate() {
               />
             </Box>
           </Grid>
-          <Grid size={{xs:12,sm:6,md:6}}>
+          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Box>
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 Current Language
@@ -96,7 +95,7 @@ export default function LanguageUpdate() {
               />
             </Box>
           </Grid>
-          <Grid size={{xs:12,sm:6,md:6}}>
+          <Grid size={{ xs: 12, sm: 6, md: 6 }}>
             <Box>
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 Language Update
@@ -110,30 +109,82 @@ export default function LanguageUpdate() {
                   height: 44,
                   backgroundColor: '#fff',
                   fontSize: '0.85rem',
-                  borderRadius: '2px',
+                  borderRadius: '4px',
                   color: targetLanguage ? '#262626' : '#bfbfbf',
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' },
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9 !important', borderWidth: '1px' },
                   '& .MuiSelect-select': { py: 0 }
                 }}
+                MenuProps={{
+                  disableScrollLock: true,
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'left',
+                  },
+                  PaperProps: {
+                    sx: {
+                      mt: 1,
+                      width: 350,
+                      height: 300,
+                      borderRadius: '4px',
+                      background: '#FFFFFF',
+                      boxShadow: '0px 9px 28px 8px #0000000D, 0px 6px 16px 0px #00000014, 0px 3px 6px -4px #0000001F',
+                      overflow: 'auto',
+                      '& .MuiList-root': {
+                        py: '12px',
+                      },
+                      '& .MuiMenuItem-root': {
+                        fontSize: '10px',
+                        py: '10px',
+                        px: '20px',
+                        color: '#262626',
+                        fontFamily: '"Inter", "Roboto", sans-serif',
+                        transition: 'all 0.2s',
+                        '&:hover': { 
+                          backgroundColor: '#F9F1F3',
+                        },
+                        '&.Mui-selected': { 
+                          backgroundColor: '#F9F1F3', 
+                          color: '#262626',
+                          '&:hover': { backgroundColor: '#F9F1F3' } 
+                        }
+                      }
+                    }
+                  }
+                }}
               >
-                <MenuItem value="" disabled>
-                  <Typography sx={{ color: '#bfbfbf', fontSize: '0.85rem' }}>Select Language Update</Typography>
+                <MenuItem value="" disabled sx={{ display: 'none' }}>
+                  Select Language Update
                 </MenuItem>
+                <MenuItem value="Odia">Odia</MenuItem>
+                <MenuItem value="Tamil">Tamil</MenuItem>
+                <MenuItem value="Bengali">Bengali</MenuItem>
+                <MenuItem value="Telugu">Telugu</MenuItem>
+                <MenuItem value="Marathi">Marathi</MenuItem>
                 <MenuItem value="English">English</MenuItem>
                 <MenuItem value="Hindi">Hindi</MenuItem>
-                <MenuItem value="Bengali">Bengali</MenuItem>
+                <MenuItem value="Gujarati">Gujarati</MenuItem>
+                <MenuItem value="Assamese">Assamese</MenuItem>
+                <MenuItem value="Punjabi">Punjabi</MenuItem>
+                <MenuItem value="Malayalam">Malayalam</MenuItem>
+                <MenuItem value="Kannada">Kannada</MenuItem>
               </Select>
             </Box>
           </Grid>
 
           {/* Action Row - Left Aligned */}
-          <Grid size={{xs:12}}>
+          <Grid size={{ xs: 12 }}>
             <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 4, mt: 3 }}>
-              <Button 
-                variant="text" 
-                sx={{ 
-                  color: '#f5222d', 
-                  textTransform: 'none', 
+              <Button
+                variant="text"
+                sx={{
+                  color: '#f5222d',
+                  textTransform: 'none',
                   fontWeight: 600,
                   fontSize: '0.9rem',
                   '&:hover': { backgroundColor: 'transparent' }
@@ -141,12 +192,12 @@ export default function LanguageUpdate() {
               >
                 Cancel
               </Button>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 disableElevation
-                sx={{ 
-                  backgroundColor: COLORS.PRIMARY, 
-                  color: '#fff', 
+                sx={{
+                  backgroundColor: COLORS.PRIMARY,
+                  color: '#fff',
                   textTransform: 'none',
                   px: 4,
                   py: 1.2,
