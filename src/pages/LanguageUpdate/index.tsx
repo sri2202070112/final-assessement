@@ -1,20 +1,30 @@
-import { Box, Typography, Paper, TextField, MenuItem, Select, Button, Grid } from '@mui/material';
+import { Box, Typography, Paper, TextField, MenuItem, Select, Button, Grid, Dialog, DialogContent } from '@mui/material';
 import { useState } from 'react';
+import { CheckCircle } from 'lucide-react';
 import { COLORS } from '../../theme/color';
 
 export default function LanguageUpdate() {
   const [targetLanguage, setTargetLanguage] = useState('');
+  const [openSuccess, setOpenSuccess] = useState(false);
+
+  const handleUpdate = () => {
+    setOpenSuccess(true);
+  };
+
+  const handleClose = () => {
+    setOpenSuccess(false);
+  };
 
   return (
-    <Box sx={{ p: '24px 32px', backgroundColor: '#fff', minHeight: '100vh' }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, color: '#262626', mb: 3 }}>
+    <Box sx={{ p: '8px 24px', backgroundColor: '#fafafa', minHeight: '100vh' }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: '#262626', mb: 1.5 }}>
         Language Update
       </Typography>
 
       <Paper
         elevation={0}
         sx={{
-          p: '32px 24px',
+          p: '10px 10px',
           borderRadius: '4px',
           border: '1px solid #f0f0f0',
           backgroundColor: '#fff',
@@ -140,18 +150,19 @@ export default function LanguageUpdate() {
                       },
                       '& .MuiMenuItem-root': {
                         fontSize: '10px',
-                        py: '10px',
+                        py: '4px',
                         px: '20px',
+                        fontWeight: 400,
                         color: '#262626',
                         fontFamily: '"Inter", "Roboto", sans-serif',
                         transition: 'all 0.2s',
-                        '&:hover': { 
+                        '&:hover': {
                           backgroundColor: '#F9F1F3',
                         },
-                        '&.Mui-selected': { 
-                          backgroundColor: '#F9F1F3', 
+                        '&.Mui-selected': {
+                          backgroundColor: '#F9F1F3',
                           color: '#262626',
-                          '&:hover': { backgroundColor: '#F9F1F3' } 
+                          '&:hover': { backgroundColor: '#F9F1F3' }
                         }
                       }
                     }
@@ -179,13 +190,13 @@ export default function LanguageUpdate() {
 
           {/* Action Row - Left Aligned */}
           <Grid size={{ xs: 12 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 4, mt: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 2, mt: 1 }}>
               <Button
                 variant="text"
                 sx={{
                   color: '#f5222d',
                   textTransform: 'none',
-                  fontWeight: 600,
+                  fontWeight: 400,
                   fontSize: '0.9rem',
                   '&:hover': { backgroundColor: 'transparent' }
                 }}
@@ -195,14 +206,15 @@ export default function LanguageUpdate() {
               <Button
                 variant="contained"
                 disableElevation
+                onClick={handleUpdate}
                 sx={{
                   backgroundColor: COLORS.PRIMARY,
                   color: '#fff',
                   textTransform: 'none',
-                  px: 4,
+                  px: 2,
                   py: 1.2,
                   fontSize: '0.9rem',
-                  fontWeight: 600,
+                  fontWeight: 400,
                   borderRadius: '4px',
                   '&:hover': { backgroundColor: '#8B1434' }
                 }}
@@ -213,6 +225,74 @@ export default function LanguageUpdate() {
           </Grid>
         </Grid>
       </Paper>
+
+      {/* Success Dialog */}
+      <Dialog 
+        open={openSuccess} 
+        onClose={handleClose}
+        PaperProps={{ 
+          sx: { 
+            borderRadius: '2px', 
+            maxWidth: '300px', 
+            width: 'calc(100% - 32px)',
+            m: 2
+          } 
+        }}
+      >
+        <DialogContent sx={{ p: '24px 20px', textAlign: 'center' }}>
+          <Typography sx={{ fontWeight: 500, color: '#262626', mb: 0.5, fontSize: '1.2rem' }}>
+            Language update request
+          </Typography>
+          <Typography sx={{ fontWeight: 500, color: '#262626', mb: 3, fontSize: '1.2rem' }}>
+            Initiated Successfully
+          </Typography>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+            <Box sx={{ 
+              width: 100, 
+              height: 100, 
+              borderRadius: '50%', 
+              backgroundColor: '#d9f7be',
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+            }}>
+              <Box sx={{ 
+                width: 75, 
+                height: 75, 
+                borderRadius: '50%', 
+                backgroundColor: '#52c41a',
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+              }}>
+                <CheckCircle color="#fff" size={45} strokeWidth={3} />
+              </Box>
+            </Box>
+          </Box>
+
+          <Box sx={{ pt: 2, borderTop: '1px solid #f0f0f0', mt: 1 }}>
+            <Button
+              fullWidth
+              variant="contained"
+              disableElevation
+              onClick={handleClose}
+              sx={{
+                backgroundColor: COLORS.PRIMARY,
+                color: '#fff',
+                textTransform: 'none',
+                py: 1.2,
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                borderRadius: '4px',
+                '&:hover': { backgroundColor: '#8B1434' }
+              }}
+            >
+              Close
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
