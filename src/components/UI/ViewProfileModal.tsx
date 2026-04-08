@@ -38,11 +38,11 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
   };
 
   const InfoRow = ({ label, value }: { label: string; value: string }) => (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, '&:last-child': { mb: 0 } }}>
-      <Typography variant="body2" sx={{ color: '#888', flex: 1 }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8, '&:last-child': { mb: 0 } }}>
+      <Typography variant="body2" sx={{ color: '#9da5b1', flex: 1, fontSize: '0.75rem' }}>
         {label}
       </Typography>
-      <Typography variant="body2" sx={{ color: '#333', fontWeight: 500, flex: 1.2 }}>
+      <Typography variant="body2" sx={{ color: '#333', fontWeight: 500, flex: 1.2, fontSize: '0.75rem' }}>
         {value}
       </Typography>
     </Box>
@@ -52,37 +52,57 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
     <Dialog
       open={open}
       onClose={onClose}
-      fullWidth
-      maxWidth="xs"
+      scroll="paper"
       PaperProps={{
         sx: {
+          width: '400px',
+          maxHeight: '90vh',
+          position: 'fixed',
+          top: '53%',
+          left: '53.5%',
+          transform: 'translate(-50%, -50%)',
           borderRadius: '4px',
-          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.1)',
+          backgroundColor: '#FFFFFF',
+          boxShadow: `
+            0px 9px 28px 8px rgba(0, 0, 0, 0.05),
+            0px 6px 16px 0px rgba(0, 0, 0, 0.12),
+            0px 3px 6px -4px rgba(0, 0, 0, 0.16)
+          `,
+          m: 0
         }
       }}
     >
-      <DialogTitle sx={{ fontWeight: 600, fontSize: '1rem', color: '#1a1a1a', py: 2.5, px: 3 }}>
+      <DialogTitle sx={{ 
+        fontWeight: 700, 
+        fontSize: '0.9rem', 
+        color: '#1a1a1a', 
+        px: 2.5,
+        py: 1.2,
+        backgroundColor: '#fff',
+        flexShrink: 0
+      }}>
         View Profile Details
       </DialogTitle>
-      <Divider sx={{ borderColor: '#f0f0f0' }} />
-      <DialogContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Divider sx={{ borderColor: '#f5f5f5' }} />
+      <DialogContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
 
         {/* Basic Information Section */}
         <Box
           sx={{
             border: '1px solid #f0f0f0',
             borderRadius: '4px',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            backgroundColor: '#fff'
           }}
         >
-          <Box sx={{ backgroundColor: '#fff', px: 2, py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+          <Box sx={{ px: 2, py: 0.8, borderBottom: '1px solid #f5f5f5' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
               Basic Information
             </Typography>
           </Box>
-          <Box sx={{ p: 2, backgroundColor: '#fff' }}>
-            {profileData.basic.map((item, idx) => (
-              <InfoRow key={idx} label={item.label} value={item.value} />
+          <Box sx={{ p: 1.5 }}>
+            {profileData.basic.map((item) => (
+              <InfoRow key={item.label} label={item.label} value={item.value} />
             ))}
           </Box>
         </Box>
@@ -92,17 +112,18 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
           sx={{
             border: '1px solid #f0f0f0',
             borderRadius: '4px',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            backgroundColor: '#fff'
           }}
         >
-          <Box sx={{ backgroundColor: '#fff', px: 2, py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#1a1a1a' }}>
+          <Box sx={{ px: 2, py: 0.8, borderBottom: '1px solid #f5f5f5' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#333', fontSize: '0.8rem' }}>
               Device Information
             </Typography>
           </Box>
-          <Box sx={{ p: 2, backgroundColor: '#fff' }}>
-            {profileData.device.map((item, idx) => (
-              <InfoRow key={idx} label={item.label} value={item.value} />
+          <Box sx={{ p: 1.5 }}>
+            {profileData.device.map((item) => (
+              <InfoRow key={item.label} label={item.label} value={item.value} />
             ))}
           </Box>
         </Box>
