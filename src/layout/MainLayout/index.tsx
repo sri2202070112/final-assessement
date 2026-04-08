@@ -27,16 +27,15 @@ export default function MainLayout() {
           height: '100vh',
           display: 'flex',
           flexDirection: 'column',
-          backgroundColor: 'background.default',
+          backgroundColor: '#F8F9FA',
           overflow: 'hidden' // Main should not scroll, only the content box
         }}
       >
         <Toolbar /> {/* To provide spacing for the fixed Header */}
-        <Box 
-          sx={{ 
-            flexGrow: 1, 
+        <Box
+          sx={{
+            flexGrow: 1,
             overflowY: 'auto',
-            p: 3,
             display: 'flex',
             flexDirection: 'column'
           }}

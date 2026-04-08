@@ -4,7 +4,7 @@ import {
   DashboardOutlined, 
   FileTextOutlined, 
   QrcodeOutlined, 
-  GlobalOutlined,
+  TranslationOutlined,
   QuestionCircleOutlined
 } from '@ant-design/icons';
 import { COLORS } from '../../theme/color';
@@ -16,6 +16,23 @@ interface SidebarProps {
   handleDrawerToggle: () => void;
   window?: () => Window;
 }
+
+const QRIcon = (props: any) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...props}>
+    {/* Top Left Frame */}
+    <path d="M2 2H10V10H2V2ZM4 4V8H8V4H4Z" />
+    {/* Top Right Frame */}
+    <path d="M14 2H22V10H14V2ZM16 4V8H20V4H16Z" />
+    {/* Bottom Left Frame */}
+    <path d="M2 14H10V22H2V14ZM4 16V20H8V16H4Z" />
+    {/* Bottom Right 3x3 Pattern */}
+    <rect x="14" y="14" width="2.5" height="2.5" />
+    <rect x="19.5" y="14" width="2.5" height="2.5" />
+    <rect x="16.75" y="16.75" width="2.5" height="2.5" />
+    <rect x="14" y="19.5" width="2.5" height="2.5" />
+    <rect x="19.5" y="19.5" width="2.5" height="2.5" />
+  </svg>
+);
 
 const menuItems = [
   {
@@ -34,13 +51,13 @@ const menuItems = [
     id: 'qr-details',
     title: 'QR Details',
     url: '/qr-details',
-    icon: QrcodeOutlined
+    icon: QRIcon
   },
   {
     id: 'language',
     title: 'Language Update',
     url: '/language',
-    icon: GlobalOutlined
+    icon: TranslationOutlined
   },
   {
     id: 'help',
@@ -232,7 +249,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                       color: isSelected ? '#fff' : '#333' 
                     }}
                   >
-                    <Icon style={{ fontSize: '1.2rem' }} />
+                    <Icon style={{ fontSize: item.id === 'qr-details' ? '1.4rem' : '1.2rem' }} />
                   </ListItemIcon>
                   <ListItemText 
                     primary={item.title} 
