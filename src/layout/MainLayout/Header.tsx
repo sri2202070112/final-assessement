@@ -46,7 +46,7 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
         }),
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between', minHeight: 52 }}>
+      <Toolbar sx={{ justifyContent: 'space-between', minHeight: '48px !important' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <IconButton
             color="inherit"
@@ -92,11 +92,11 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
             elevation: 0,
             sx: {
               mt: 1,
-              width: 156,
-              height: 'auto',
-              minHeight: 94,
+              ml: -5.5, // Nudged right even more
+              width: 140,
+              height: 84,
               borderRadius: '4px',
-              padding: '16px',
+              padding: '12px 16px',
               boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
@@ -107,7 +107,7 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
                 padding: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '14px'
+                gap: '10px'
               }
             }
           }}
@@ -120,8 +120,10 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
               p: 0,
               minHeight: 'auto',
               color: '#333',
-              fontSize: '0.9rem',
+              fontSize: '0.85rem',
               fontWeight: 500,
+              display: 'flex',
+              justifyContent: 'flex-start',
               '&:hover': { backgroundColor: 'transparent', opacity: 0.7 }
             }}
           >
@@ -133,8 +135,10 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
               p: 0,
               minHeight: 'auto',
               color: COLORS.ERROR,
-              fontSize: '0.9rem',
+              fontSize: '0.85rem',
               fontWeight: 500,
+              display: 'flex',
+              justifyContent: 'flex-start',
               '&:hover': { backgroundColor: 'transparent', opacity: 0.7 }
             }}
           >

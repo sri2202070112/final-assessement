@@ -1,9 +1,9 @@
 import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  DashboardOutlined, 
-  FileTextOutlined, 
-  QrcodeOutlined, 
+import {
+  DashboardOutlined,
+  FileTextOutlined,
+  QrcodeOutlined,
   TranslationOutlined,
   QuestionCircleOutlined
 } from '@ant-design/icons';
@@ -122,13 +122,13 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                 <ListItemIcon sx={{ minWidth: 32, color: isSelected ? '#fff' : '#333' }}>
                   <Icon style={{ fontSize: '1.2rem' }} />
                 </ListItemIcon>
-                <ListItemText 
-                  primary={item.title} 
-                  primaryTypographyProps={{ 
-                    fontSize: '0.9rem', 
+                <ListItemText
+                  primary={item.title}
+                  primaryTypographyProps={{
+                    fontSize: '0.9rem',
                     fontWeight: isSelected ? 500 : 400,
                     color: isSelected ? '#fff' : '#262626'
-                  }} 
+                  }}
                 />
               </ListItemButton>
             </ListItem>
@@ -141,8 +141,8 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
   return (
     <Box
       component="nav"
-      sx={{ 
-        width: { sm: open ? drawerWidth : 60 }, 
+      sx={{
+        width: { sm: open ? drawerWidth : 60 },
         flexShrink: { sm: 0 },
         transition: (theme) => theme.transitions.create('width', {
           easing: theme.transitions.easing.sharp,
@@ -156,7 +156,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
         open={open}
         onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true, 
+          keepMounted: true,
         }}
         sx={{
           display: { xs: 'block', sm: 'none' },
@@ -169,9 +169,9 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
         variant="permanent"
         sx={{
           display: { xs: 'none', sm: 'block' },
-          '& .MuiDrawer-paper': { 
-            boxSizing: 'border-box', 
-            width: open ? drawerWidth : 60, 
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: open ? drawerWidth : 60,
             borderRight: '1px solid #f0f0f0',
             backgroundColor: '#fff',
             boxShadow: 'none',
@@ -185,16 +185,16 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
         open={open}
       >
         <Box sx={{ p: open ? '12px 24px' : '12px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img 
-            src={open ? "/src/assets/logo.png" : "/src/assets/blurbg.png"} 
-            alt="PNB Logo" 
-            style={{ 
-              height: open ? 42 : 32, 
+          <img
+            src={open ? "/src/assets/logo.png" : "/src/assets/blurbg.png"}
+            alt="PNB Logo"
+            style={{
+              height: open ? 42 : 32,
               width: open ? 'auto' : 32,
               borderRadius: open ? 0 : '4px',
               objectFit: 'cover',
               transition: 'all 0.3s ease'
-            }} 
+            }}
           />
         </Box>
 
@@ -241,26 +241,26 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                     }
                   }}
                 >
-                  <ListItemIcon 
-                    sx={{ 
-                      minWidth: 0, 
-                      mr: open ? 2 : 'auto', 
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 2 : 'auto',
                       justifyContent: 'center',
-                      color: isSelected ? '#fff' : '#333' 
+                      color: isSelected ? '#fff' : '#333'
                     }}
                   >
                     <Icon style={{ fontSize: item.id === 'qr-details' ? '1.4rem' : '1.2rem' }} />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={item.title} 
-                    sx={{ 
+                  <ListItemText
+                    primary={item.title}
+                    sx={{
                       opacity: open ? 1 : 0,
                       display: open ? 'block' : 'none'
                     }}
-                    primaryTypographyProps={{ 
-                      fontSize: '0.875rem', 
+                    primaryTypographyProps={{
+                      fontSize: '0.875rem',
                       variant: 'body2'
-                    }} 
+                    }}
                   />
                 </ListItemButton>
               </ListItem>
