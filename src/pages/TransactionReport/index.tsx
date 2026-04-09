@@ -21,29 +21,53 @@ import {
   Chip,
   IconButton
 } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 import { Search, Download, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { COLORS } from '../../theme/color';
+import { ENCRYPTION_KEY, FETCH_REPORT, PASS_KEY } from '../../config/config';
+import { useAuth } from 'react-oidc-context';
+import { store } from '../../utils/store';
+import { decryptRequest, encryptResponse } from '../../utils/crypto';
 
-const TRANSACTIONS = Array.from({ length: 50 }, (_, i) => ({
-  id: `${i + 1}`,
-  txnId: `${703118109860 + i}`,
-  rrn: `${703118109860 + i}`,
-  amount: (Math.floor(Math.random() * 20) * 1000 + 1000).toLocaleString(),
-  date: '24/02/2026, 12:23 PM',
-  status: 'Received'
-}));
+// Helper to format Date object to YYYY-MM-DD in local time
+const formatToLocalISO = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Helper to get today's date in YYYY-MM-DD for input fields
+const getTodayDate = () => {
+  return formatToLocalISO(new Date());
+};
+
+// Helper to format YYYY-MM-DD to DD/MM/YYYY for API
+const formatDateForApi = (dateStr: string) => {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+};
 
 export default function TransactionReport() {
   const [filter, setFilter] = useState('Today');
   const [rowsPerPage, setRowsPerPage] = useState(4);
   const [page, setPage] = useState(1);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [startDate, setStartDate] = useState(getTodayDate());
+  const [endDate, setEndDate] = useState(getTodayDate());
+  const [monthlyRange, setMonthlyRange] = useState('1');
+  const auth = useAuth()
 
-  const totalPages = Math.ceil(TRANSACTIONS.length / rowsPerPage);
+  const totalPages = Math.max(1, Math.ceil(transactions.length / rowsPerPage));
   
   // Calculate displayed transactions
   const startIndex = (page - 1) * rowsPerPage;
-  const displayedTransactions = TRANSACTIONS.slice(startIndex, startIndex + rowsPerPage);
+  const displayedTransactions = transactions.slice(startIndex, startIndex + rowsPerPage);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1) {
@@ -56,16 +80,77 @@ export default function TransactionReport() {
     setPage(1); // Reset to first page when rows per page changes
   };
 
+  const handleMonthlySubmit = () => {
+    const now = new Date();
+    
+    // End date is the last day of the PREVIOUS month
+    const end = new Date(now.getFullYear(), now.getMonth(), 0); // 0th day of current month is last day of previous month
+    
+    // Start date is the 1st day of X months ago
+    const start = new Date(now.getFullYear(), now.getMonth() - parseInt(monthlyRange), 1);
+
+    const startDateStr = formatToLocalISO(start);
+    const endDateStr = formatToLocalISO(end);
+
+    setStartDate(startDateStr);
+    setEndDate(endDateStr);
+    setPage(1);
+    
+    // Call fetchReport with explicit dates to avoid stale state issues
+    fetchReport(startDateStr, endDateStr);
+  };
+
+  const userDetails = store.getUserDetails();
+
+  const fetchReport = async (sDate?: string, eDate?: string) => {
+    try {
+      const start = sDate || startDate;
+      const end = eDate || endDate;
+
+      const rawPayload = {
+        "startDate": formatDateForApi(start),
+        "endDate": formatDateForApi(end),
+        "vpa_id": userDetails?.vpa_id || '',
+        "mode": "both"
+      }
+
+      const response = await fetch(FETCH_REPORT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Pass_key': PASS_KEY,
+          'Authorization': auth.user?.access_token || '',
+        },
+        body: JSON.stringify(rawPayload),
+      });
+
+      const jsonResponse = await response.json();
+      console.log("Report Response:", jsonResponse);
+
+      if (jsonResponse.data) {
+        setTransactions(jsonResponse.data);
+      }
+      
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(()=>{
+    fetchReport()
+  },[])
+
   return (
-    <Box sx={{
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Box sx={{
       width: '100%',
-      height: '100vh',
+      minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
       backgroundColor: '#f8f9fa',
-      p: '1px 16px', // Reduced top padding from 16px to 8px
+      p: '1px 16px',
       boxSizing: 'border-box',
-      overflow: 'hidden'
+      overflowY: 'auto'
     }}>
       {/* Title */}
       <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', mb: 0.5, flexShrink: 0 }}>
@@ -87,7 +172,17 @@ export default function TransactionReport() {
         <RadioGroup
           row
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setFilter(val);
+            if (val === 'Today') {
+              const today = getTodayDate();
+              setStartDate(today);
+              setEndDate(today);
+              setPage(1);
+              fetchReport(today, today);
+            }
+          }}
         >
           <FormControlLabel
             value="Today"
@@ -114,7 +209,8 @@ export default function TransactionReport() {
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Select
-                defaultValue="Last Month's Report"
+                value={monthlyRange}
+                onChange={(e) => setMonthlyRange(e.target.value)}
                 size="small"
                 sx={{
                   width: 240,
@@ -134,14 +230,15 @@ export default function TransactionReport() {
                   }
                 }}
               >
-                <MenuItem value="Last Month's Report">Last Month's Report</MenuItem>
-                <MenuItem value="Last 3 month's Report">Last 3 month's Report</MenuItem>
-                <MenuItem value="Last 6 month's Report">Last 6 month's Report</MenuItem>
-                <MenuItem value="Last 12 month's Report">Last 12 month's Report</MenuItem>
+                <MenuItem value="1">Last Month's Report</MenuItem>
+                <MenuItem value="3">Last 3 month's Report</MenuItem>
+                <MenuItem value="6">Last 6 month's Report</MenuItem>
+                <MenuItem value="12">Last 12 month's Report</MenuItem>
               </Select>
               <Button
                 variant="contained"
                 disableElevation
+                onClick={handleMonthlySubmit}
                 sx={{
                   backgroundColor: COLORS.PRIMARY,
                   color: '#fff',
@@ -160,92 +257,80 @@ export default function TransactionReport() {
           </Box>
         )}
 
-        {/* Conditional Custom Range Filter Section */}
-        {filter === 'Custom Range' && (
-          <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f0f0f0' }}>
-            <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end' }}>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>
-                  Start Date
-                </Typography>
-                <TextField
-                  type="date"
-                  size="small"
-                  sx={{
-                    width: 220,
-                    '& .MuiOutlinedInput-root': { 
-                      height: 40, 
-                      fontSize: '0.85rem',
-                      '& input::-webkit-calendar-picker-indicator': {
-                        cursor: 'pointer',
-                        opacity: 0,
-                        position: 'absolute',
-                        right: 8,
-                        width: '100%',
-                        height: '100%'
-                      }
-                    }
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end" sx={{ pointerEvents: 'none' }}>
-                        <Calendar size={18} color="#9ca3af" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+            {/* Conditional Custom Range Filter Section */}
+            {filter === 'Custom Range' && (
+              <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #f0f0f0' }}>
+                <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end' }}>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>
+                      Start Date
+                    </Typography>
+                    <DatePicker
+                      value={dayjs(startDate)}
+                      onChange={(newValue) => setStartDate(newValue ? newValue.format('YYYY-MM-DD') : '')}
+                      disableFuture
+                      maxDate={dayjs(endDate)}
+                      slotProps={{
+                        textField: {
+                          size: 'small',
+                          sx: {
+                            width: 220,
+                            '& .MuiOutlinedInput-root': {
+                              height: 40,
+                              fontSize: '0.85rem',
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>
+                      End Date
+                    </Typography>
+                    <DatePicker
+                      value={dayjs(endDate)}
+                      onChange={(newValue) => setEndDate(newValue ? newValue.format('YYYY-MM-DD') : '')}
+                      disableFuture
+                      minDate={dayjs(startDate)}
+                      slotProps={{
+                        textField: {
+                          size: 'small',
+                          sx: {
+                            width: 220,
+                            '& .MuiOutlinedInput-root': {
+                              height: 40,
+                              fontSize: '0.85rem',
+                            }
+                          }
+                        }
+                      }}
+                    />
+                  </Box>
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    onClick={() => {
+                      setPage(1);
+                      fetchReport();
+                    }}
+                    sx={{
+                      backgroundColor: COLORS.PRIMARY,
+                      color: '#fff',
+                      textTransform: 'none',
+                      fontSize: '0.9rem',
+                      fontWeight: 500,
+                      height: 40,
+                      px: 4,
+                      borderRadius: '6px',
+                      '&:hover': { backgroundColor: '#8B1434' }
+                    }}
+                  >
+                    Submit
+                  </Button>
+                </Box>
               </Box>
-              <Box>
-                <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>
-                  End Date
-                </Typography>
-                <TextField
-                  type="date"
-                  size="small"
-                  sx={{
-                    width: 220,
-                    '& .MuiOutlinedInput-root': { 
-                      height: 40, 
-                      fontSize: '0.85rem',
-                      '& input::-webkit-calendar-picker-indicator': {
-                        cursor: 'pointer',
-                        opacity: 0,
-                        position: 'absolute',
-                        right: 8,
-                        width: '100%',
-                        height: '100%'
-                      }
-                    }
-                  }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end" sx={{ pointerEvents: 'none' }}>
-                        <Calendar size={18} color="#9ca3af" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-              </Box>
-              <Button
-                variant="contained"
-                disableElevation
-                sx={{
-                  backgroundColor: COLORS.PRIMARY,
-                  color: '#fff',
-                  textTransform: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: 500,
-                  height: 40,
-                  px: 4,
-                  borderRadius: '6px',
-                  '&:hover': { backgroundColor: '#8B1434' }
-                }}
-              >
-                Submit
-              </Button>
-            </Box>
-          </Box>
-        )}
+            )}
       </Paper>
 
       {/* Main Unified Table Card */}
@@ -309,7 +394,7 @@ export default function TransactionReport() {
         </Box>
 
         {/* Table Section */}
-        <Box sx={{ maxHeight: 260, overflowY: 'auto' }}>
+        <Box sx={{ overflowX: 'auto' }}>
           <Table stickyHeader sx={{ minWidth: 700 }}>
             <TableHead>
               <TableRow>
@@ -370,30 +455,50 @@ export default function TransactionReport() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {displayedTransactions.map((row) => (
-                <TableRow key={row.id}>
-                  <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.id}</TableCell>
-                  <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.txnId}</TableCell>
-                  <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.rrn}</TableCell>
-                  <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.amount}</TableCell>
-                  <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.date}</TableCell>
-                  <TableCell sx={{ py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
-                    <Chip
-                      label={row.status}
-                      size="small"
-                      sx={{
-                        backgroundColor: '#F6FFED',
-                        color: '#52C41A',
-                        fontWeight: 500,
-                        borderRadius: '999px',
-                        fontSize: '0.7rem',
-                        height: 22,
-                        px: 1
-                      }}
-                    />
+              {displayedTransactions.length > 0 ? (
+                displayedTransactions.map((row, index) => (
+                  <TableRow key={row.Transaction_Id || index}>
+                    <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+                      {startIndex + index + 1}
+                    </TableCell>
+                    <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+                      {row.Transaction_Id}
+                    </TableCell>
+                    <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+                      {row.rrn || ''}
+                    </TableCell>
+                    <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+                      {row.Transaction_Amount}
+                    </TableCell>
+                    <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+                      {row["Date_&_Time"]}
+                    </TableCell>
+                    <TableCell sx={{ py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
+                      <Chip
+                        label="Success"
+                        size="small"
+                        sx={{
+                          backgroundColor: '#F6FFED',
+                          color: '#52C41A',
+                          fontWeight: 500,
+                          borderRadius: '999px',
+                          fontSize: '0.7rem',
+                          height: 22,
+                          px: 1
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
+                    <Typography sx={{ color: '#8c8c8c', fontSize: '0.9rem' }}>
+                      No transaction
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </Box>
@@ -449,42 +554,67 @@ export default function TransactionReport() {
             />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <IconButton 
-              size="small" 
+            <IconButton
+              size="small"
               onClick={() => handlePageChange(page - 1)}
-              sx={{ 
-                width: 28, 
-                height: 28, 
-                borderRadius: '2px', 
-                border: '1px solid #f0f0f0', 
+              sx={{
+                width: 28,
+                height: 28,
+                borderRadius: '2px',
+                border: '1px solid #f0f0f0',
                 color: page === 1 ? '#d9d9d9' : '#262626'
               }}
             >
               <ChevronLeft size={14} />
             </IconButton>
-            
+
             {(() => {
-              const pages: (number | string)[] = [1, '...', 4, 5, 6, 7, 8, '...', 50];
+              const pages: (number | string)[] = [];
+              const range = 2; // Number of pages before and after current page
+
+              if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+              } else {
+                pages.push(1);
+                
+                if (page > range + 2) {
+                  pages.push('...');
+                }
+
+                const start = Math.max(2, page - range);
+                const end = Math.min(totalPages - 1, page + range);
+
+                for (let i = start; i <= end; i++) {
+                  pages.push(i);
+                }
+
+                if (page < totalPages - range - 1) {
+                  pages.push('...');
+                }
+
+                pages.push(totalPages);
+              }
+
               return pages.map((p, idx) => (
                 typeof p === 'string' ? (
-                  <Typography key={idx} sx={{ color: '#bfbfbf', px: 0.2, fontSize: '0.75rem' }}>{p}</Typography>
+                  <Typography key={idx} sx={{ color: '#bfbfbf', px: 0.5, fontSize: '0.75rem', display: 'flex', alignItems: 'center' }}>{p}</Typography>
                 ) : (
                   <Button
                     key={idx}
                     variant="outlined"
                     size="small"
                     onClick={() => handlePageChange(p)}
-                    sx={{ 
-                      minWidth: 28, 
-                      height: 28, 
+                    sx={{
+                      minWidth: 28,
+                      height: 28,
                       backgroundColor: '#fff',
-                      borderColor: page === p ? '#9E173B' : '#f0f0f0', 
-                      color: page === p ? '#9E173B' : '#262626', 
+                      borderColor: page === p ? '#9E173B' : '#f0f0f0',
+                      color: page === p ? '#9E173B' : '#262626',
                       fontWeight: 400,
-                      fontSize: '0.75rem', 
+                      fontSize: '0.75rem',
                       p: 0,
                       borderRadius: '2px',
-                      '&:hover': { 
+                      '&:hover': {
                         borderColor: '#9E173B',
                         backgroundColor: '#fff'
                       }
@@ -496,14 +626,14 @@ export default function TransactionReport() {
               ));
             })()}
 
-            <IconButton 
-              size="small" 
+            <IconButton
+              size="small"
               onClick={() => handlePageChange(page + 1)}
-              sx={{ 
-                width: 28, 
-                height: 28, 
-                borderRadius: '2px', 
-                border: '1px solid #f0f0f0', 
+              sx={{
+                width: 28,
+                height: 28,
+                borderRadius: '2px',
+                border: '1px solid #f0f0f0',
                 color: '#262626'
               }}
             >
@@ -512,6 +642,7 @@ export default function TransactionReport() {
           </Box>
         </Box>
       </Paper>
-    </Box>
+      </Box>
+    </LocalizationProvider>
   );
 }

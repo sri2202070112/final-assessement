@@ -5,6 +5,7 @@ import { COLORS } from '../../theme/color';
 import { useAuth } from 'react-oidc-context';
 import { decryptRequest, encryptResponse } from '../../utils/crypto';
 import { ENCRYPTION_KEY, FETCH_USER_BY_ID, PASS_KEY } from '../../config/config';
+import { store } from '../../utils/store';
 
 // Static options removed to use dynamic API data
 
@@ -69,6 +70,9 @@ export default function Dashboard() {
 
         // Update vpaOptions with the fetched vpa_id list from data array
         if (parsedData.data && parsedData.data.length > 0) {
+          // Store the decrypted user details in session store for global access
+          store.setUserDetails(parsedData.data[0]);
+
           const fetchedVpas = parsedData.data.map((item: any) => item.vpa_id).filter(Boolean);
           if (fetchedVpas.length > 0) {
             setVpaOptions(fetchedVpas);
@@ -76,10 +80,9 @@ export default function Dashboard() {
             setTempSelectedVpaIndex(0);
             
             // Only show modal if it hasn't been shown in this session
-            const isModalShown = sessionStorage.getItem('vpa_modal_shown');
-            if (!isModalShown) {
+            if (!store.isVpaModalShown()) {
               setShowVpaModal(true);
-              sessionStorage.setItem('vpa_modal_shown', 'true');
+              store.setVpaModalShown(true);
             }
           }
         }

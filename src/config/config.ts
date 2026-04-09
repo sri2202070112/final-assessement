@@ -5,3 +5,4 @@ export const FETCH_USER_BY_ID='https://auth-dev-stage.iserveu.online/pnb/fetch/f
 
 export const FETCH_ALL_LANGUAGE='https://auth-dev-stage.iserveu.online/pnb/isu_soundbox/lang/fetch_language'
 export const FETCH_CURRENT_LANGUAGE='https://auth-dev-stage.iserveu.online/pnb/isu_soundbox/user_api/current_language'
+export const FETCH_REPORT='https://api-dev-stage.iserveu.online/pnb/sb/reports/querysubmit_user'
