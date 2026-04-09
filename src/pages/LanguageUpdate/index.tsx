@@ -1,49 +1,65 @@
 import { Box, Typography, Paper, TextField, MenuItem, Select, Button, Grid, Dialog, DialogContent } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 import { COLORS } from '../../theme/color';
-import { ENCRYPTION_KEY, FETCH_ALL_LANGUAGE, FETCH_CURRENT_LANGUAGE, PASS_KEY } from '../../config/config';
+import { ENCRYPTION_KEY, FETCH_ALL_LANGUAGE, FETCH_CURRENT_LANGUAGE, PASS_KEY, UPDATE_LANGUAGE } from '../../config/config';
 import { useAuth } from 'react-oidc-context';
-import { decryptRequest } from '../../utils/crypto';
+import { decryptRequest, encryptResponse } from '../../utils/crypto';
+import { store } from '../../utils/store';
+
+const formatLanguageName = (name: string) =>
+  name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : '';
 
 export default function LanguageUpdate() {
-  const [targetLanguage, setTargetLanguage] = useState('');
+  const [targetLanguage, setTargetLanguage] = useState('HINDI');
   const [openSuccess, setOpenSuccess] = useState(false);
   const [languages, setLanguages] = useState<string[]>([]);
+  const [currentLanguage, setCurrentLanguage] = useState('');
+  const [apiMessage, setApiMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(true);
+
+  const userData = store.getUserDetails();
 
   const auth = useAuth()
 
   const handleUpdate = () => {
-    setOpenSuccess(true);
+    // setOpenSuccess(true);
+    updateLanguage()
   };
 
   const handleClose = () => {
     setOpenSuccess(false);
   };
 
-const fetchCurrentLanguage=async()=>{
-  try{
-    const response=await fetch(`${FETCH_CURRENT_LANGUAGE}/dkdjk`,{
-      method:'GET',headers:{
-        'Content-Type':'application/json',
-        'Pass_key':PASS_KEY,
-        'Authorization':auth.user?.access_token || '',
+  const fetchCurrentLanguage = async () => {
+    try {
+      const response = await fetch(`${FETCH_CURRENT_LANGUAGE}/${userData?.serial_number}`, {
+        method: 'GET', headers: {
+          'Content-Type': 'application/json',
+          'Pass_key': PASS_KEY,
+          'Authorization': auth.user?.access_token || '',
+        }
+      })
+      const jsonResponse = await response.json();
+      if (jsonResponse.ResponseData) {
+        const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
+        const parsedData = JSON.parse(decryptedData);
+        console.log("Decrypted Current Language Data:", parsedData);
+        if (parsedData.data) {
+          // If data is a string (current language), set targetLanguage
+          // If data is an array, take the first element or handle as needed
+          const currentLang = Array.isArray(parsedData.data) ? parsedData.data[0] : parsedData.data;
+          const formatted = formatLanguageName(String(currentLang));
+          setCurrentLanguage(formatted);
+          // We no longer setTargetLanguage(formatted) here to keep it as HINDI by default
+        }
       }
-    })
-    const jsonResponse=await response.json();
-    if(jsonResponse.ResponseData){
-      const decryptedData=decryptRequest(jsonResponse.ResponseData,ENCRYPTION_KEY);
-      const parsedData=JSON.parse(decryptedData);
-      console.log("Decrypted Language Data:", parsedData);
-      if (parsedData.data) {
-        setLanguages(parsedData.data);
-      }
+    } catch (error) {
+      console.log(error)
     }
-  } catch (error) {
-    console.log(error)
   }
-}
-      
+
+
 
   const fetchLanguage = async () => {
     try {
@@ -60,7 +76,7 @@ const fetchCurrentLanguage=async()=>{
         const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
         const parsedData = JSON.parse(decryptedData);
         console.log("Decrypted Language Data:", parsedData);
-        if (parsedData.data) {
+        if (Array.isArray(parsedData.data)) {
           setLanguages(parsedData.data);
         }
       }
@@ -69,8 +85,53 @@ const fetchCurrentLanguage=async()=>{
     }
   }
 
+  const updateLanguage = async () => {
+    try {
+      const rawPayload = {
+        tid: userData?.serial_number,
+        update_language: targetLanguage,
+
+      }
+      const encryptedData = encryptResponse(JSON.stringify(rawPayload), ENCRYPTION_KEY);
+      const response = await fetch(UPDATE_LANGUAGE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Pass_key': PASS_KEY,
+          'Authorization': auth.user?.access_token || '',
+        },
+        body: JSON.stringify({
+          RequestData: encryptedData
+        }),
+      });
+
+      const jsonResponse = await response.json();
+
+
+      if (jsonResponse.ResponseData) {
+        const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
+        const parsedData = JSON.parse(decryptedData);
+        console.log("Decrypted Update Language Data:", parsedData);
+        
+        setApiMessage(parsedData.message || 'Processing Request');
+        setIsSuccess(parsedData.result === 'success'||parsedData.result === 'failed');
+        setOpenSuccess(true);
+
+        if (parsedData.result === 'success') {
+          setTimeout(() => {
+            fetchCurrentLanguage();
+          }, 1000);
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
   useEffect(() => {
     fetchLanguage()
+    fetchCurrentLanguage()
   }, [])
 
 
@@ -100,7 +161,7 @@ const fetchCurrentLanguage=async()=>{
               <TextField
                 fullWidth
                 size="small"
-                defaultValue="3456789pabaitra@pnb"
+                defaultValue={userData.vpa_id}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     height: 44,
@@ -124,7 +185,7 @@ const fetchCurrentLanguage=async()=>{
               <TextField
                 fullWidth
                 size="small"
-                defaultValue="9003567823456"
+                defaultValue={userData.serial_number}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     height: 44,
@@ -148,7 +209,8 @@ const fetchCurrentLanguage=async()=>{
               <TextField
                 fullWidth
                 size="small"
-                defaultValue="Odia"
+                value={currentLanguage || ''}
+                slotProps={{ input: { readOnly: true } }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     height: 44,
@@ -231,9 +293,13 @@ const fetchCurrentLanguage=async()=>{
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
                   Select Language Update
                 </MenuItem>
-                {languages.map((lang) => (
-                  <MenuItem key={lang} value={lang}>
-                    {lang.charAt(0).toUpperCase() + lang.slice(1).toLowerCase()}
+                {Array.isArray(languages) && languages.map((lang) => (
+                  <MenuItem
+                    key={lang}
+                    value={lang}
+                    disabled={lang.toUpperCase() === currentLanguage.toUpperCase()}
+                  >
+                    {formatLanguageName(lang)}
                   </MenuItem>
                 ))}
               </Select>
@@ -295,8 +361,14 @@ const fetchCurrentLanguage=async()=>{
           <Typography sx={{ fontWeight: 500, color: '#262626', mb: 0.5, fontSize: '1.2rem' }}>
             Language update request
           </Typography>
-          <Typography sx={{ fontWeight: 500, color: '#262626', mb: 3, fontSize: '1.2rem' }}>
-            Initiated Successfully
+          <Typography sx={{ 
+            fontWeight: 500, 
+            color: isSuccess ? '#52c41a' : '#f5222d', 
+            mb: 3, 
+            fontSize: '1rem',
+            lineHeight: 1.4
+          }}>
+            {apiMessage}
           </Typography>
 
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
@@ -304,7 +376,7 @@ const fetchCurrentLanguage=async()=>{
               width: 100,
               height: 100,
               borderRadius: '50%',
-              backgroundColor: '#d9f7be',
+              backgroundColor: isSuccess ? '#d9f7be' : '#fff1f0',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -313,12 +385,16 @@ const fetchCurrentLanguage=async()=>{
                 width: 75,
                 height: 75,
                 borderRadius: '50%',
-                backgroundColor: '#52c41a',
+                backgroundColor: isSuccess ? '#52c41a' : '#ff4d4f',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
               }}>
-                <CheckCircle color="#fff" size={45} strokeWidth={3} />
+                {isSuccess ? (
+                  <CheckCircle color="#fff" size={45} strokeWidth={3} />
+                ) : (
+                  <XCircle color="#fff" size={45} strokeWidth={3} />
+                )}
               </Box>
             </Box>
           </Box>
