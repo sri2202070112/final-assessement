@@ -6,8 +6,8 @@ import Dashboard from '../pages/Dashboard';
 import TransactionReport from '../pages/TransactionReport';
 import QrDetails from '../pages/QrDetails';
 import LanguageUpdate from '../pages/LanguageUpdate';
-import CallbackPage from '../pages/Callback/callback';
-import ProtectedRoute from './Protectedroutes';
+import CallbackPage from '../pages/Callback/Callback';
+import ProtectedRoute from './ProtectedRoutes';
 
 
 export default function ThemeRoutes() {

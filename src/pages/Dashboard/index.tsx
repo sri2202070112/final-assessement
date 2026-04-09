@@ -1,23 +1,28 @@
-import { Box, Card, Typography, Grid, MenuItem, Select, FormControl, Menu, Radio } from '@mui/material';
+import { Box, Card, Typography, Grid, MenuItem, Select, FormControl, Menu, Radio, Dialog, DialogTitle, DialogContent, DialogActions, Button, RadioGroup, FormControlLabel } from '@mui/material';
 import { ArrowLeftRight, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { COLORS } from '../../theme/color';
+import { useAuth } from 'react-oidc-context';
+import { decryptRequest, encryptResponse } from '../../utils/crypto';
+import { ENCRYPTION_KEY, FETCH_USER_BY_ID, PASS_KEY } from '../../config/config';
 
-const VPA_OPTIONS = [
-  'Pabitra.hota@pnb',
-  '9283032322742bis@pnb',
-  'Pabitra@pnb',
-  'Pabitra.hota@pnb'
-];
+// Static options removed to use dynamic API data
 
 export default function Dashboard() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
   const [selectedVpaIndex, setSelectedVpaIndex] = useState(0);
+  const [vpaOptions, setVpaOptions] = useState<string[]>([]);
+  const [showVpaModal, setShowVpaModal] = useState(false);
+  const [tempSelectedVpaIndex, setTempSelectedVpaIndex] = useState(0);
 
   const [timeAnchorEl, setTimeAnchorEl] = useState<null | HTMLElement>(null);
   const isTimeMenuOpen = Boolean(timeAnchorEl);
   const [selectedTime, setSelectedTime] = useState('Today');
+
+  const auth = useAuth();
+
+  console.log(auth.user)
 
   const handleMenuClose = (index?: number) => {
     setAnchorEl(null);
@@ -32,6 +37,63 @@ export default function Dashboard() {
       setSelectedTime(time);
     }
   };
+
+  const getvpaid = async () => {
+    try {
+      const rawPayload = { mobile_number: auth.user.profile.user_name };
+  
+
+      // 1. Encrypt the data
+      const encryptedData = encryptResponse(JSON.stringify(rawPayload), ENCRYPTION_KEY);
+
+      // 2. Send the request with 'RequestData'
+      const response = await fetch(FETCH_USER_BY_ID  , {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': auth.user?.access_token || '',
+          'Pass_key': PASS_KEY
+        },
+        body: JSON.stringify({
+          RequestData: encryptedData
+        }),
+      });
+
+      const jsonResponse = await response.json();
+
+      // 3. Decrypt the response if it contains 'ResponseData'
+      if (jsonResponse.ResponseData) {
+        const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
+        const parsedData = JSON.parse(decryptedData);
+        console.log("Decrypted VPA ID Data:", parsedData);
+
+        // Update vpaOptions with the fetched vpa_id list from data array
+        if (parsedData.data && parsedData.data.length > 0) {
+          const fetchedVpas = parsedData.data.map((item: any) => item.vpa_id).filter(Boolean);
+          if (fetchedVpas.length > 0) {
+            setVpaOptions(fetchedVpas);
+            setSelectedVpaIndex(0);
+            setTempSelectedVpaIndex(0);
+            
+            // Only show modal if it hasn't been shown in this session
+            const isModalShown = sessionStorage.getItem('vpa_modal_shown');
+            if (!isModalShown) {
+              setShowVpaModal(true);
+              sessionStorage.setItem('vpa_modal_shown', 'true');
+            }
+          }
+        }
+      } else {
+        console.log("VPA ID Data (Plain):", jsonResponse);
+      }
+    } catch (error) {
+      console.error("Error fetching VPA ID:", error);
+    }
+  };
+
+  useEffect(() => {
+    getvpaid();
+  }, []);
 
   return (
     <Box
@@ -72,7 +134,7 @@ export default function Dashboard() {
               }}
             >
               <Typography sx={{ color: '#333', fontSize: '0.9rem', fontWeight: 500 }}>
-                {VPA_OPTIONS[selectedVpaIndex]}
+                {vpaOptions[selectedVpaIndex] || 'Loading...'}
               </Typography>
               <ChevronDown size={14} color="#666" />
             </Box>
@@ -208,7 +270,7 @@ export default function Dashboard() {
           }
         }}
       >
-        {VPA_OPTIONS.map((vpa, index) => (
+        {vpaOptions.map((vpa, index) => (
           <MenuItem
             key={index}
             onClick={() => handleMenuClose(index)}
@@ -275,6 +337,102 @@ export default function Dashboard() {
           </MenuItem>
         ))}
       </Menu>
+      {/* VPA Selection Modal */}
+      <Dialog
+        open={showVpaModal && vpaOptions.length > 0}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '4px',
+            p: 1
+          }
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#262626' }}>
+            Select VPA
+          </Typography>
+        </DialogTitle>
+        <DialogContent sx={{ py: 2 }}>
+          <Typography variant="body2" sx={{ color: '#595959', mb: 2, fontWeight: 500 }}>
+            Select a VPA to Proceed
+          </Typography>
+          <RadioGroup
+            value={tempSelectedVpaIndex}
+            onChange={(e) => setTempSelectedVpaIndex(parseInt(e.target.value))}
+          >
+            {vpaOptions.map((vpa, index) => (
+              <Box
+                key={index}
+                sx={{
+                  border: '1px solid #f0f0f0',
+                  borderRadius: '4px',
+                  mb: 1.5,
+                  p: 1.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'all 0.2s',
+                  '&:hover': { backgroundColor: '#fafafa' }
+                }}
+              >
+                <FormControlLabel
+                  value={index}
+                  control={
+                    <Radio 
+                      sx={{ 
+                        color: '#d9d9d9', 
+                        '&.Mui-checked': { color: COLORS.PRIMARY } 
+                      }} 
+                    />
+                  }
+                  label={
+                    <Typography sx={{ color: '#262626', fontSize: '0.95rem', fontWeight: 500, ml: 1 }}>
+                      {vpa}
+                    </Typography>
+                  }
+                  sx={{ width: '100%', m: 0 }}
+                />
+              </Box>
+            ))}
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={() => setShowVpaModal(false)}
+            sx={{
+              color: '#ff4d4f',
+              textTransform: 'none',
+              fontSize: '0.95rem',
+              fontWeight: 500,
+              '&:hover': { backgroundColor: 'transparent' }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disableElevation
+            onClick={() => {
+              setSelectedVpaIndex(tempSelectedVpaIndex);
+              setShowVpaModal(false);
+            }}
+            sx={{
+              backgroundColor: COLORS.PRIMARY,
+              color: '#fff',
+              textTransform: 'none',
+              px: 4,
+              py: 1,
+              fontSize: '0.95rem',
+              fontWeight: 500,
+              borderRadius: '6px',
+              '&:hover': { backgroundColor: '#8B1434' }
+            }}
+          >
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
