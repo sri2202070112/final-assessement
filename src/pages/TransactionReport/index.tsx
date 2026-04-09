@@ -57,7 +57,7 @@ export default function TransactionReport() {
       <Paper elevation={0} sx={{
         p: 2,
         mb: 2,
-        borderRadius: '8px',
+        borderRadius: '2px',
         border: '1px solid #f0f0f0',
         backgroundColor: '#fff',
         flexShrink: 0
@@ -150,15 +150,26 @@ export default function TransactionReport() {
                   Start Date
                 </Typography>
                 <TextField
-                  placeholder="DD/MM/YYYY"
+                  type="date"
                   size="small"
                   sx={{
                     width: 220,
-                    '& .MuiOutlinedInput-root': { height: 40, fontSize: '0.85rem' }
+                    '& .MuiOutlinedInput-root': { 
+                      height: 40, 
+                      fontSize: '0.85rem',
+                      '& input::-webkit-calendar-picker-indicator': {
+                        cursor: 'pointer',
+                        opacity: 0,
+                        position: 'absolute',
+                        right: 8,
+                        width: '100%',
+                        height: '100%'
+                      }
+                    }
                   }}
                   InputProps={{
                     endAdornment: (
-                      <InputAdornment position="end">
+                      <InputAdornment position="end" sx={{ pointerEvents: 'none' }}>
                         <Calendar size={18} color="#9ca3af" />
                       </InputAdornment>
                     ),
@@ -170,15 +181,26 @@ export default function TransactionReport() {
                   End Date
                 </Typography>
                 <TextField
-                  placeholder="DD/MM/YYYY"
+                  type="date"
                   size="small"
                   sx={{
                     width: 220,
-                    '& .MuiOutlinedInput-root': { height: 40, fontSize: '0.85rem' }
+                    '& .MuiOutlinedInput-root': { 
+                      height: 40, 
+                      fontSize: '0.85rem',
+                      '& input::-webkit-calendar-picker-indicator': {
+                        cursor: 'pointer',
+                        opacity: 0,
+                        position: 'absolute',
+                        right: 8,
+                        width: '100%',
+                        height: '100%'
+                      }
+                    }
                   }}
                   InputProps={{
                     endAdornment: (
-                      <InputAdornment position="end">
+                      <InputAdornment position="end" sx={{ pointerEvents: 'none' }}>
                         <Calendar size={18} color="#9ca3af" />
                       </InputAdornment>
                     ),
