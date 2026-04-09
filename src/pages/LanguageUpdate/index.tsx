@@ -1,11 +1,17 @@
 import { Box, Typography, Paper, TextField, MenuItem, Select, Button, Grid, Dialog, DialogContent } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { COLORS } from '../../theme/color';
+import { ENCRYPTION_KEY, FETCH_ALL_LANGUAGE, FETCH_CURRENT_LANGUAGE, PASS_KEY } from '../../config/config';
+import { useAuth } from 'react-oidc-context';
+import { decryptRequest } from '../../utils/crypto';
 
 export default function LanguageUpdate() {
   const [targetLanguage, setTargetLanguage] = useState('');
   const [openSuccess, setOpenSuccess] = useState(false);
+  const [languages, setLanguages] = useState<string[]>([]);
+
+  const auth = useAuth()
 
   const handleUpdate = () => {
     setOpenSuccess(true);
@@ -14,6 +20,59 @@ export default function LanguageUpdate() {
   const handleClose = () => {
     setOpenSuccess(false);
   };
+
+const fetchCurrentLanguage=async()=>{
+  try{
+    const response=await fetch(`${FETCH_CURRENT_LANGUAGE}/dkdjk`,{
+      method:'GET',headers:{
+        'Content-Type':'application/json',
+        'Pass_key':PASS_KEY,
+        'Authorization':auth.user?.access_token || '',
+      }
+    })
+    const jsonResponse=await response.json();
+    if(jsonResponse.ResponseData){
+      const decryptedData=decryptRequest(jsonResponse.ResponseData,ENCRYPTION_KEY);
+      const parsedData=JSON.parse(decryptedData);
+      console.log("Decrypted Language Data:", parsedData);
+      if (parsedData.data) {
+        setLanguages(parsedData.data);
+      }
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+      
+
+  const fetchLanguage = async () => {
+    try {
+      const response = await fetch(FETCH_ALL_LANGUAGE, {
+        method: 'GET', headers: {
+          'Content-Type': 'application/json',
+          'Pass_key': PASS_KEY,
+          'Authorization': auth.user?.access_token || '',
+        }
+      })
+      const jsonResponse = await response.json();
+
+      if (jsonResponse.ResponseData) {
+        const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
+        const parsedData = JSON.parse(decryptedData);
+        console.log("Decrypted Language Data:", parsedData);
+        if (parsedData.data) {
+          setLanguages(parsedData.data);
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  useEffect(() => {
+    fetchLanguage()
+  }, [])
+
 
   return (
     <Box sx={{ p: '8px 24px', backgroundColor: '#fafafa', minHeight: '100vh' }}>
@@ -172,18 +231,11 @@ export default function LanguageUpdate() {
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
                   Select Language Update
                 </MenuItem>
-                <MenuItem value="Odia">Odia</MenuItem>
-                <MenuItem value="Tamil">Tamil</MenuItem>
-                <MenuItem value="Bengali">Bengali</MenuItem>
-                <MenuItem value="Telugu">Telugu</MenuItem>
-                <MenuItem value="Marathi">Marathi</MenuItem>
-                <MenuItem value="English">English</MenuItem>
-                <MenuItem value="Hindi">Hindi</MenuItem>
-                <MenuItem value="Gujarati">Gujarati</MenuItem>
-                <MenuItem value="Assamese">Assamese</MenuItem>
-                <MenuItem value="Punjabi">Punjabi</MenuItem>
-                <MenuItem value="Malayalam">Malayalam</MenuItem>
-                <MenuItem value="Kannada">Kannada</MenuItem>
+                {languages.map((lang) => (
+                  <MenuItem key={lang} value={lang}>
+                    {lang.charAt(0).toUpperCase() + lang.slice(1).toLowerCase()}
+                  </MenuItem>
+                ))}
               </Select>
             </Box>
           </Grid>
@@ -227,16 +279,16 @@ export default function LanguageUpdate() {
       </Paper>
 
       {/* Success Dialog */}
-      <Dialog 
-        open={openSuccess} 
+      <Dialog
+        open={openSuccess}
         onClose={handleClose}
-        PaperProps={{ 
-          sx: { 
-            borderRadius: '2px', 
-            maxWidth: '300px', 
+        PaperProps={{
+          sx: {
+            borderRadius: '2px',
+            maxWidth: '300px',
             width: 'calc(100% - 32px)',
             m: 2
-          } 
+          }
         }}
       >
         <DialogContent sx={{ p: '24px 20px', textAlign: 'center' }}>
@@ -246,24 +298,24 @@ export default function LanguageUpdate() {
           <Typography sx={{ fontWeight: 500, color: '#262626', mb: 3, fontSize: '1.2rem' }}>
             Initiated Successfully
           </Typography>
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-            <Box sx={{ 
-              width: 100, 
-              height: 100, 
-              borderRadius: '50%', 
+            <Box sx={{
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
               backgroundColor: '#d9f7be',
-              display: 'flex', 
-              justifyContent: 'center', 
+              display: 'flex',
+              justifyContent: 'center',
               alignItems: 'center',
             }}>
-              <Box sx={{ 
-                width: 75, 
-                height: 75, 
-                borderRadius: '50%', 
+              <Box sx={{
+                width: 75,
+                height: 75,
+                borderRadius: '50%',
                 backgroundColor: '#52c41a',
-                display: 'flex', 
-                justifyContent: 'center', 
+                display: 'flex',
+                justifyContent: 'center',
                 alignItems: 'center',
               }}>
                 <CheckCircle color="#fff" size={45} strokeWidth={3} />
