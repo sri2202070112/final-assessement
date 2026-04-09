@@ -6,6 +6,9 @@ import Dashboard from '../pages/Dashboard';
 import TransactionReport from '../pages/TransactionReport';
 import QrDetails from '../pages/QrDetails';
 import LanguageUpdate from '../pages/LanguageUpdate';
+import CallbackPage from '../pages/Callback/callback';
+import ProtectedRoute from './Protectedroutes';
+
 
 export default function ThemeRoutes() {
   return useRoutes([
@@ -20,12 +23,20 @@ export default function ThemeRoutes() {
         {
           path: 'login',
           element: <Login />,
+        },
+        {
+          path: 'redirected',
+          element:<CallbackPage/>,
         }
       ]
     },
     {
       path: '/',
-      element: <MainLayout />,
+      element: (
+        <ProtectedRoute>
+          <MainLayout />
+        </ProtectedRoute>
+      ),
       children: [
         {
           path: 'dashboard',

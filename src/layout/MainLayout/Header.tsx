@@ -1,6 +1,7 @@
 import { AppBar, Toolbar, IconButton, Typography, Box, Avatar, Menu, MenuItem } from '@mui/material';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { useState } from 'react';
+import { useAuth } from "react-oidc-context";
 import { COLORS } from '../../theme/color';
 import ViewProfileModal from '../../components/UI/ViewProfileModal';
 
@@ -12,6 +13,7 @@ interface HeaderProps {
 }
 
 export default function Header({ open, handleDrawerToggle }: HeaderProps) {
+  const auth = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -131,7 +133,10 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
             View Profile
           </MenuItem>
           <MenuItem
-            onClick={handleMenuClose}
+            onClick={() => {
+              handleMenuClose();
+              auth.signoutRedirect();
+            }}
             sx={{
               p: 0,
               minHeight: 'auto',
