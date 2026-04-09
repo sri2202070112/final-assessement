@@ -25,17 +25,36 @@ import { Search, Download, ChevronLeft, ChevronRight, Calendar } from 'lucide-re
 import { useState } from 'react';
 import { COLORS } from '../../theme/color';
 
-const TRANSACTIONS = [
-  { id: '1', txnId: '703118109867', rrn: '703118109867', amount: '10,000', date: '24/02/2026, 12:23 PM', status: 'Received' },
-  { id: '2', txnId: '703118109862', rrn: '703118109862', amount: '10,000', date: '24/02/2026, 12:23 PM', status: 'Received' },
-  { id: '3', txnId: '703118109865', rrn: '703118109865', amount: '10,000', date: '24/02/2026, 12:23 PM', status: 'Received' },
-  { id: '4', txnId: '703118109860', rrn: '703118109860', amount: '10,000', date: '24/02/2026, 12:23 PM', status: 'Received' },
-];
+const TRANSACTIONS = Array.from({ length: 50 }, (_, i) => ({
+  id: `${i + 1}`,
+  txnId: `${703118109860 + i}`,
+  rrn: `${703118109860 + i}`,
+  amount: (Math.floor(Math.random() * 20) * 1000 + 1000).toLocaleString(),
+  date: '24/02/2026, 12:23 PM',
+  status: 'Received'
+}));
 
 export default function TransactionReport() {
   const [filter, setFilter] = useState('Today');
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [page, setPage] = useState(6); // As per screenshot
+  const [rowsPerPage, setRowsPerPage] = useState(4);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.ceil(TRANSACTIONS.length / rowsPerPage);
+  
+  // Calculate displayed transactions
+  const startIndex = (page - 1) * rowsPerPage;
+  const displayedTransactions = TRANSACTIONS.slice(startIndex, startIndex + rowsPerPage);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1) {
+      setPage(newPage);
+    }
+  };
+
+  const handleRowsPerPageChange = (newValue: number) => {
+    setRowsPerPage(newValue);
+    setPage(1); // Reset to first page when rows per page changes
+  };
 
   return (
     <Box sx={{
@@ -44,12 +63,12 @@ export default function TransactionReport() {
       display: 'flex',
       flexDirection: 'column',
       backgroundColor: '#f8f9fa',
-      p: 2,
+      p: '1px 16px', // Reduced top padding from 16px to 8px
       boxSizing: 'border-box',
       overflow: 'hidden'
     }}>
       {/* Title */}
-      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', mb: 1.5, flexShrink: 0 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, color: '#1a1a1a', mb: 0.5, flexShrink: 0 }}>
         Transaction Reports
       </Typography>
 
@@ -231,10 +250,7 @@ export default function TransactionReport() {
 
       {/* Main Unified Table Card */}
       <Paper elevation={0} sx={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: '8px',
+        borderRadius: '2px',
         border: '1px solid #f0f0f0',
         backgroundColor: '#fff',
         overflow: 'hidden'
@@ -246,10 +262,10 @@ export default function TransactionReport() {
             placeholder="Search here..."
             size="small"
             sx={{
-              width: 280,
+              width: 180,
               '& .MuiOutlinedInput-root': {
                 height: 40,
-                borderRadius: '6px',
+                borderRadius: '2px',
                 backgroundColor: '#fff',
                 fontSize: '0.9rem',
                 '& fieldset': { borderColor: '#E5E7EB' },
@@ -281,7 +297,7 @@ export default function TransactionReport() {
               fontSize: '0.9rem',
               fontWeight: 500,
               height: 40,
-              px: 2.5,
+              px: 2,
               borderRadius: '6px',
               '&:hover': {
                 backgroundColor: '#8B1434'
@@ -293,11 +309,11 @@ export default function TransactionReport() {
         </Box>
 
         {/* Table Section */}
-        <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        <Box sx={{ maxHeight: 260, overflowY: 'auto' }}>
           <Table stickyHeader sx={{ minWidth: 700 }}>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#000000', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     S. No.
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -306,7 +322,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#000000', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Transaction ID
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -315,7 +331,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#000000', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     RRN Number
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -324,8 +340,8 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell align="right" sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                <TableCell sx={{ fontWeight: 500, color: '#000000', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Amount
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
                       <Typography sx={{ fontSize: '7px', color: '#bfbfbf' }}>▲</Typography>
@@ -333,7 +349,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#000000', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Date
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -342,7 +358,7 @@ export default function TransactionReport() {
                     </Box>
                   </Box>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 500, color: '#595959', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
+                <TableCell sx={{ fontWeight: 500, color: '#000000', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     Status
                     <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 0.5 }}>
@@ -354,12 +370,12 @@ export default function TransactionReport() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {TRANSACTIONS.map((row) => (
+              {displayedTransactions.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.id}</TableCell>
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.txnId}</TableCell>
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.rrn}</TableCell>
-                  <TableCell align="right" sx={{ color: '#262626', fontSize: '0.8rem', fontWeight: 600, py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.amount}</TableCell>
+                  <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.amount}</TableCell>
                   <TableCell sx={{ color: '#262626', fontSize: '0.8rem', py: 1.5, borderBottom: '1px solid #f0f0f0' }}>{row.date}</TableCell>
                   <TableCell sx={{ py: 1.5, borderBottom: '1px solid #f0f0f0' }}>
                     <Chip
@@ -387,57 +403,110 @@ export default function TransactionReport() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          p: '12px 16px',
-          borderTop: '1px solid #f0f0f0',
+          p: '8px 16px',
           backgroundColor: '#fff'
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" sx={{ color: '#8c8c8c', fontSize: '0.8rem' }}>Row per page</Typography>
+            <Typography sx={{ color: '#8c8c8c', fontSize: '0.75rem' }}>Row per page</Typography>
             <Select
               value={rowsPerPage}
               size="small"
-              onChange={(e) => setRowsPerPage(Number(e.target.value))}
+              onChange={(e) => handleRowsPerPageChange(Number(e.target.value))}
               sx={{
                 height: 28,
-                fontSize: '0.8rem',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' }
+                fontSize: '0.75rem',
+                minWidth: 55,
+                borderRadius: '2px',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' }
               }}
             >
+              <MenuItem value={4}>4</MenuItem>
               <MenuItem value={10}>10</MenuItem>
               <MenuItem value={25}>25</MenuItem>
               <MenuItem value={50}>50</MenuItem>
             </Select>
-            <Typography variant="body2" sx={{ color: '#8c8c8c', fontSize: '0.8rem', ml: 1 }}>Go to</Typography>
+            <Typography sx={{ color: '#8c8c8c', fontSize: '0.75rem', ml: 1 }}>Go to</Typography>
             <TextField
               size="small"
               value={page}
-              onChange={(e) => setPage(Number(e.target.value))}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (!isNaN(val)) handlePageChange(val);
+              }}
               sx={{
-                width: 38,
+                width: 36,
                 '& .MuiOutlinedInput-root': {
                   height: 28,
-                  fontSize: '0.8rem',
-                  padding: 0,
-                  textAlign: 'center'
+                  fontSize: '0.75rem',
+                  borderRadius: '2px',
+                  backgroundColor: '#fff',
+                  '& fieldset': { borderColor: '#d9d9d9' }
                 },
-                '& .MuiOutlinedInput-input': { padding: '0 4px', textAlign: 'center' }
+                '& .MuiOutlinedInput-input': { padding: 0, textAlign: 'center' }
               }}
             />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <IconButton size="small" sx={{ width: 28, height: 28, borderRadius: '4px', border: '1px solid #f0f0f0', color: '#d9d9d9' }}>
+            <IconButton 
+              size="small" 
+              onClick={() => handlePageChange(page - 1)}
+              sx={{ 
+                width: 28, 
+                height: 28, 
+                borderRadius: '2px', 
+                border: '1px solid #f0f0f0', 
+                color: page === 1 ? '#d9d9d9' : '#262626'
+              }}
+            >
               <ChevronLeft size={14} />
             </IconButton>
-            <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>1</Button>
-            <Typography sx={{ color: '#d9d9d9', px: 0.5, fontSize: '0.8rem' }}>...</Typography>
-            <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>4</Button>
-            <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>5</Button>
-            <Button disableElevation variant="contained" size="small" sx={{ minWidth: 28, height: 28, backgroundColor: '#fff', border: '1px solid #9E173B', color: '#9E173B', fontWeight: 600, fontSize: '0.8rem', p: 0 }}>6</Button>
-            <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>7</Button>
-            <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>8</Button>
-            <Typography sx={{ color: '#d9d9d9', px: 0.5, fontSize: '0.8rem' }}>...</Typography>
-            <Button variant="outlined" size="small" sx={{ minWidth: 28, height: 28, borderColor: '#f0f0f0', color: '#262626', fontSize: '0.8rem', p: 0 }}>50</Button>
-            <IconButton size="small" sx={{ width: 28, height: 28, borderRadius: '4px', border: '1px solid #f0f0f0', color: '#262626' }}>
+            
+            {(() => {
+              const pages: (number | string)[] = [1, '...', 4, 5, 6, 7, 8, '...', 50];
+              return pages.map((p, idx) => (
+                typeof p === 'string' ? (
+                  <Typography key={idx} sx={{ color: '#bfbfbf', px: 0.2, fontSize: '0.75rem' }}>{p}</Typography>
+                ) : (
+                  <Button
+                    key={idx}
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handlePageChange(p)}
+                    sx={{ 
+                      minWidth: 28, 
+                      height: 28, 
+                      backgroundColor: '#fff',
+                      borderColor: page === p ? '#9E173B' : '#f0f0f0', 
+                      color: page === p ? '#9E173B' : '#262626', 
+                      fontWeight: 400,
+                      fontSize: '0.75rem', 
+                      p: 0,
+                      borderRadius: '2px',
+                      '&:hover': { 
+                        borderColor: '#9E173B',
+                        backgroundColor: '#fff'
+                      }
+                    }}
+                  >
+                    {p}
+                  </Button>
+                )
+              ));
+            })()}
+
+            <IconButton 
+              size="small" 
+              onClick={() => handlePageChange(page + 1)}
+              sx={{ 
+                width: 28, 
+                height: 28, 
+                borderRadius: '2px', 
+                border: '1px solid #f0f0f0', 
+                color: '#262626'
+              }}
+            >
               <ChevronRight size={14} />
             </IconButton>
           </Box>
