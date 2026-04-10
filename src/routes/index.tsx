@@ -8,6 +8,7 @@ import QrDetails from '../pages/QrDetails';
 import LanguageUpdate from '../pages/LanguageUpdate';
 import CallbackPage from '../pages/Callback/Callback';
 import ProtectedRoute from './ProtectedRoutes';
+import HelpSupport from '../pages/HelpSupport';
 
 
 export default function ThemeRoutes() {
@@ -53,6 +54,10 @@ export default function ThemeRoutes() {
         {
           path: 'language',
           element: <LanguageUpdate />
+        },
+        {
+          path: 'help',
+          element: <HelpSupport />
         }
       ]
     }

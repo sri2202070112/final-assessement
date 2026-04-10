@@ -28,7 +28,6 @@ export default function QrDetails() {
                 backgroundColor: 'white'
               }}
             >
-              {/* Using a massive icon as a placeholder for an actual QR code image component */}
               <QrcodeOutlined style={{ fontSize: '200px', color: '#1f1f1f' }} />
             </Box>
 
