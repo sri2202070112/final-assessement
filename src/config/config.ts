@@ -1,10 +1,14 @@
-export const ENCRYPTION_KEY='a6T8tOCYiSzDTrcqPvCbJfy0wSQOVcfaevH0gtwCtoU='
-export const PASS_KEY='QC62FQKXT2DQTO43LMWH5A44UKVPQ7LK5Y6HVHRQ3XTIKLDTB6HA'
+/**
+ * Application Configuration
+ * All values are pulled from .env for security and flexibility.
+ * Vite requires 'VITE_' prefix for client-side environment variables.
+ */
 
-export const FETCH_USER_BY_ID='https://auth-dev-stage.iserveu.online/pnb/fetch/fetchById'   
+export const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+export const PASS_KEY = import.meta.env.VITE_PASS_KEY;
 
-export const FETCH_ALL_LANGUAGE='https://auth-dev-stage.iserveu.online/pnb/isu_soundbox/lang/fetch_language'
-export const FETCH_CURRENT_LANGUAGE='https://auth-dev-stage.iserveu.online/pnb/isu_soundbox/user_api/current_language'
-export const FETCH_REPORT='https://api-dev-stage.iserveu.online/pnb/sb/reports/querysubmit_user'
-
-export const UPDATE_LANGUAGE='https://auth-dev-stage.iserveu.online/pnb/isu_soundbox/lang/update_language'
+export const FETCH_USER_BY_ID = import.meta.env.VITE_FETCH_USER_BY_ID;
+export const FETCH_ALL_LANGUAGE = import.meta.env.VITE_FETCH_ALL_LANGUAGE;
+export const FETCH_CURRENT_LANGUAGE = import.meta.env.VITE_FETCH_CURRENT_LANGUAGE;
+export const FETCH_REPORT = import.meta.env.VITE_FETCH_REPORT;
+export const UPDATE_LANGUAGE = import.meta.env.VITE_UPDATE_LANGUAGE;
