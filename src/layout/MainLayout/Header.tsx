@@ -13,11 +13,15 @@ interface HeaderProps {
   handleDrawerToggle: () => void;
 }
 
+/**
+ * The Header component stays at the top of the page.
+ * It contains the sidebar toggle button and the user profile menu.
+ */
 export default function Header({ open, handleDrawerToggle }: HeaderProps) {
   const auth = useAuth();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Anchor for the profile dropdown menu
   const isMenuOpen = Boolean(anchorEl);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // Controls the 'View Profile' popup
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -49,8 +53,10 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
         }),
       }}
     >
+      {/* Main bar content */}
       <Toolbar sx={{ justifyContent: 'space-between', minHeight: '48px !important' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {/* Button to show/hide the sidebar */}
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -66,6 +72,7 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
           </IconButton>
         </Box>
 
+        {/* User profile section (Avatar and Name) */}
         <Box
           onClick={handleProfileClick}
           sx={{
@@ -83,6 +90,7 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
             sx={{ width: 34, height: 34, border: '1px solid #f0f0f0' }}
           />
           <Typography variant="body2" sx={{ fontWeight: 500, color: '#333' }}>
+            {/* Display the merchant name fetched from the session store */}
             {store.getUserDetails()?.beneficiary_name || store.getUserDetails()?.merchant_name || 'Merchant'}
           </Typography>
         </Box>

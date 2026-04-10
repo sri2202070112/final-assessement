@@ -29,7 +29,7 @@ import { FETCH_REPORT, PASS_KEY } from '../../config/config';
 import { useAuth } from 'react-oidc-context';
 import { store } from '../../utils/store';
 
-// Helper to format Date object to YYYY-MM-DD in local time
+// Helper to format Date object to YYYY-MM-DD (e.g., 2024-04-10)
 const formatToLocalISO = (date: Date) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -42,7 +42,7 @@ const getTodayDate = () => {
   return formatToLocalISO(new Date());
 };
 
-// Helper to format YYYY-MM-DD to DD/MM/YYYY for API
+// Helper to format YYYY-MM-DD to DD/MM/YYYY for API requests
 const formatDateForApi = (dateStr: string) => {
   if (!dateStr) return '';
   const [year, month, day] = dateStr.split('-');
@@ -50,11 +50,12 @@ const formatDateForApi = (dateStr: string) => {
 };
 
 export default function TransactionReport() {
+  // State for filters, pagination, and fetched data
   const [filter, setFilter] = useState('Today');
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [goToPage, setGoToPage] = useState('1');
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]); // Current list of transactions
   const [startDate, setStartDate] = useState(getTodayDate());
   const [endDate, setEndDate] = useState(getTodayDate());
   const [monthlyRange, setMonthlyRange] = useState('1');
@@ -102,6 +103,9 @@ export default function TransactionReport() {
 
   const userDetails = store.getUserDetails();
 
+  /**
+   * Fetches the detailed transaction list from the server based on selected dates.
+   */
   const fetchReport = async (sDate?: string, eDate?: string) => {
     try {
       const start = sDate || startDate;
@@ -130,6 +134,9 @@ export default function TransactionReport() {
     }
   }
 
+  /**
+   * Converts the transaction data into a CSV file and triggers a browser download.
+   */
   const handleDownload = () => {
     // Headers matching the table columns
     const headers = ['S.No.', 'Transaction ID', 'RRN Number', 'Amount', 'Date', 'Status'];
@@ -162,7 +169,7 @@ export default function TransactionReport() {
     fetchReport()
   },[])
 
-  // Pagination Logic to match image
+  // Generates the array of page numbers/dots for the pagination bar
   const getPaginationItems = () => {
     const items: (number | string)[] = [];
     if (totalPages <= 7) {

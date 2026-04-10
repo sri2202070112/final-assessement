@@ -7,25 +7,32 @@ import { decryptRequest, encryptResponse } from '../../utils/crypto';
 import { ENCRYPTION_KEY, FETCH_USER_BY_ID, PASS_KEY, FETCH_REPORT } from '../../config/config';
 import { store } from '../../utils/store';
 
+/**
+ * The Dashboard page provides a high-level overview of merchant high-level performance metrics,
+ * including total transaction counts and total amounts collected.
+ */
 export default function Dashboard() {
+  // UI state for managing menus and selections
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
-  const [selectedVpaIndex, setSelectedVpaIndex] = useState(0);
-  const [vpaOptions, setVpaOptions] = useState<string[]>([]);
-  const [showVpaModal, setShowVpaModal] = useState(false);
+  const [selectedVpaIndex, setSelectedVpaIndex] = useState(0); // Which VPA is currently active
+  const [vpaOptions, setVpaOptions] = useState<string[]>([]); // List of available VPAs
+  const [showVpaModal, setShowVpaModal] = useState(false); // Controls the initial VPA selection popup
   const [tempSelectedVpaIndex, setTempSelectedVpaIndex] = useState(0);
-  const [fullVpaData, setFullVpaData] = useState<any[]>([]); // Added state for full data
+  const [fullVpaData, setFullVpaData] = useState<any[]>([]); 
 
+  // State for the time filter (Today vs Yesterday)
   const [timeAnchorEl, setTimeAnchorEl] = useState<null | HTMLElement>(null);
   const isTimeMenuOpen = Boolean(timeAnchorEl);
   const [selectedTime, setSelectedTime] = useState('Today');
 
+  // State for the summary statistics displayed in cards
   const [stats, setStats] = useState({
     totalTransactions: 0,
     totalAmount: 0
   });
 
-  const auth = useAuth();
+  const auth = useAuth(); // Handlers for authentication and user tokens
 
   const handleMenuClose = (index?: number) => {
     setAnchorEl(null);
@@ -41,6 +48,9 @@ export default function Dashboard() {
     }
   };
 
+  /**
+   * Fetches transaction summaries from the API based on the selected VPA and time range.
+   */
   const fetchDashboardStats = async () => {
     try {
       const vpa = vpaOptions[selectedVpaIndex];
@@ -103,9 +113,20 @@ export default function Dashboard() {
     }
   };
 
+  /**
+   * getvpaid is a critical function that identifies which VPA IDs belong to the merchant's mobile number.
+   * 
+   * Steps:
+   * 1. Pack the mobile number into a 'RequestData' object.
+   * 2. Encrypt this object so the data remains secure while traveling over the internet.
+   * 3. Send the encrypted package to the PNB server.
+   * 4. Once the server replies, decrypt the response to get the actual VPA list.
+   * 5. Save the details (like name and serial number) in the 'store' for other pages to use.
+   */
   const getvpaid = async () => {
     try {
       const rawPayload = { mobile_number: auth.user?.profile?.user_name };
+      // Security: We encrypt the request so only PNB's server can read the mobile number.
       const encryptedData = encryptResponse(JSON.stringify(rawPayload), ENCRYPTION_KEY);
 
       const response = await fetch(FETCH_USER_BY_ID, {
@@ -121,6 +142,7 @@ export default function Dashboard() {
       const jsonResponse = await response.json();
 
       if (jsonResponse.ResponseData) {
+        // More Security: The server sends an encrypted reply. we must decrypt it first.
         const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
         const parsedData = JSON.parse(decryptedData);
         
@@ -134,6 +156,7 @@ export default function Dashboard() {
             setSelectedVpaIndex(0);
             setTempSelectedVpaIndex(0);
             
+            // If it's the first time visiting, show the VPA selection popup or 'modal'
             if (!store.isVpaModalShown()) {
               setShowVpaModal(true);
               store.setVpaModalShown(true);
@@ -146,18 +169,21 @@ export default function Dashboard() {
     }
   };
 
+  // Fetch VPA list once the user is authenticated
   useEffect(() => {
     if (auth.isAuthenticated) {
       getvpaid();
     }
   }, [auth.isAuthenticated]);
 
+  // Sync the global store whenever a different VPA is selected
   useEffect(() => {
     if (fullVpaData.length > 0) {
       store.setUserDetails(fullVpaData[selectedVpaIndex]);
     }
   }, [selectedVpaIndex, fullVpaData]);
 
+  // Re-fetch statistics whenever filters (VPA or Time) change
   useEffect(() => {
     if (vpaOptions.length > 0) {
       fetchDashboardStats();
@@ -166,6 +192,7 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', backgroundColor: '#f8f9fa', pt: '2px', px: '32px', boxSizing: 'border-box' }}>
+      {/* Header section with Title and Filters */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 1.5 }}>
         <Box>
           <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.25rem', mb: 3.5 }}>Dashboard</Typography>
@@ -232,6 +259,7 @@ export default function Dashboard() {
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>Total No Of Transaction</Typography>
             </Box>
+            {/* Displaying the count. .toLocaleString() adds commas for thousands (e.g., 1,234) */}
             <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.75rem' }}>
               {stats.totalTransactions.toLocaleString()}
             </Typography>

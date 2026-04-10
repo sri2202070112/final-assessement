@@ -16,10 +16,15 @@ import logo from '../../assets/logo.png';
 export default function QrDetails() {
   const [qrType, setQrType] = useState('static');
   const [amount, setAmount] = useState('');
-  const [isGenerated, setIsGenerated] = useState(false);
-  const [validUntil, setValidUntil] = useState('');
-  const [errorText, setErrorText] = useState('');
-
+  /**
+   * Validates the user's input to ensure only positive numbers are entered,
+   * up to a maximum limit of 100,000.
+   * 
+   * Validation Rules:
+   * 1. Empty input is allowed (clears the field).
+   * 2. Only numbers (0-9) are allowed. We use a 'Regular Expression' (/^\d*$/) to check this.
+   * 3. The amount cannot exceed ₹ 100,000 per QR code for security reasons.
+   */
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setErrorText(''); // Reset error on change
@@ -47,15 +52,22 @@ export default function QrDetails() {
     setAmount(numValue.toString());
   };
 
+  /**
+   * Generates a dynamic QR code with a 2-minute expiry window.
+   * We calculate exactly 2 minutes into the future to create a sense of urgency and 
+   * ensure security for the payment.
+   */
   const handleGenerate = () => {
     if (!amount || parseInt(amount, 10) <= 0) return;
     const now = new Date();
+    // Add 2 minutes to the current desktop/phone time
     now.setMinutes(now.getMinutes() + 2);
     const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
     setValidUntil(timeStr);
     setIsGenerated(true);
   };
 
+  // If the user switches between Static/Dynamic, we hide the QR until they click 'Generate' again
   useEffect(() => {
     setIsGenerated(false);
   }, [qrType]);
@@ -167,6 +179,7 @@ export default function QrDetails() {
       </Paper>
 
       {/* Main Content Area - White background block as per Image 9 */}
+      {/* The Workspace Area - Shows the actual QR ticket */}
       <Box sx={{
         flexGrow: 1,
         backgroundColor: '#fff',
@@ -227,7 +240,7 @@ export default function QrDetails() {
               UPI ID : 9952785870m@pnb
             </Typography>
 
-            {/* Download Button */}
+            {/* Download Button: Lets the merchant download or print the QR to stick it at their counter */}
             <Button
               variant="contained"
               sx={{

@@ -7,6 +7,7 @@ import { useAuth } from 'react-oidc-context';
 import { decryptRequest, encryptResponse } from '../../utils/crypto';
 import { store } from '../../utils/store';
 
+// Capitalizes the first letter of a language name and lowercases the rest
 const formatLanguageName = (name: string) =>
   name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : '';
 
@@ -18,6 +19,7 @@ export default function LanguageUpdate() {
   const [apiMessage, setApiMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(true);
 
+  // Get merchant details (like Serial Number) from the session store
   const userData = store.getUserDetails();
 
   const auth = useAuth()
@@ -30,6 +32,10 @@ export default function LanguageUpdate() {
     setOpenSuccess(false);
   };
 
+  /**
+   * Fetches the current language active on the merchant's physical terminal.
+   * This involves decrypting the response received from the PNB API.
+   */
   const fetchCurrentLanguage = async () => {
     try {
       const response = await fetch(`${FETCH_CURRENT_LANGUAGE}/${userData?.serial_number}`, {
@@ -54,6 +60,9 @@ export default function LanguageUpdate() {
     }
   }
 
+  /**
+   * Fetches the list of all supported languages for the terminal from the server.
+   */
   const fetchLanguage = async () => {
     try {
       const response = await fetch(FETCH_ALL_LANGUAGE, {
@@ -77,6 +86,10 @@ export default function LanguageUpdate() {
     }
   }
 
+  /**
+   * Sends a request to update the terminal's hardware language.
+   * The request payload is encrypted before sending.
+   */
   const updateLanguage = async () => {
     try {
       const rawPayload = {
@@ -129,6 +142,7 @@ export default function LanguageUpdate() {
         Language Update
       </Typography>
 
+      {/* Form Section - Contains Read-only VPA info and the Language selector */}
       <Paper
         elevation={0}
         sx={{

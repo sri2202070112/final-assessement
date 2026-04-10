@@ -34,6 +34,10 @@ const QRIcon = (props: any) => (
   </svg>
 );
 
+/**
+ * Definition of all the links shown in the sidebar.
+ * Includes text, target URL, and the icon to display.
+ */
 const menuItems = [
   {
     id: 'dashboard',
@@ -68,7 +72,7 @@ const menuItems = [
 ];
 
 export default function Sidebar({ open, handleDrawerToggle, window }: SidebarProps) {
-  const location = useLocation();
+  const location = useLocation(); // Used to detect which page the user is currently on
   const container = window !== undefined ? () => window().document.body : undefined;
 
   const drawerContent = (
@@ -81,6 +85,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
       <List sx={{ pt: 0, px: 0 }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
+          // Check if this menu item matches the current URL to highlight it
           const isSelected = location.pathname === item.url || (item.url !== '/dashboard' && location.pathname.includes(item.url));
 
           return (
@@ -184,6 +189,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
         }}
         open={open}
       >
+        {/* The PNB Logo at the top - switches based on whether sidebar is open or closed */}
         <Box sx={{ p: open ? '12px 24px' : '12px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img
             src={open ? "/src/assets/logo.png" : "/src/assets/blurbg.png"}
