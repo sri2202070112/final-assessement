@@ -18,9 +18,37 @@ export default function QrDetails() {
   const [amount, setAmount] = useState('');
   const [isGenerated, setIsGenerated] = useState(false);
   const [validUntil, setValidUntil] = useState('');
+  const [errorText, setErrorText] = useState('');
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setErrorText(''); // Reset error on change
+    
+    if (value === '') {
+      setAmount('');
+      return;
+    }
+
+    // Check if it's numeric
+    if (!/^\d*$/.test(value)) {
+      setErrorText('Only numbers allowed');
+      return;
+    }
+
+    const numValue = parseInt(value, 10);
+    
+    // Check limit
+    if (numValue > 100000) {
+      setErrorText('Maximum amount allowed is ₹ 100,000');
+      return;
+    }
+
+    // Valid number
+    setAmount(numValue.toString());
+  };
 
   const handleGenerate = () => {
-    if (!amount) return;
+    if (!amount || parseInt(amount, 10) <= 0) return;
     const now = new Date();
     now.setMinutes(now.getMinutes() + 2);
     const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -91,14 +119,23 @@ export default function QrDetails() {
                 placeholder="Enter the amount to be collected"
                 size="small"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={handleAmountChange}
+                error={!!errorText}
+                helperText={errorText}
+                inputProps={{ inputMode: 'numeric' }}
                 sx={{ 
                   width: '300px',
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 0,
                     height: '36px',
                     fontSize: '0.85rem',
-                    '& fieldset': { borderColor: '#e4e4e4' },
+                    '& fieldset': { borderColor: errorText ? COLORS.ERROR : '#e4e4e4' },
+                  },
+                  '& .MuiFormHelperText-root': {
+                    marginLeft: 0,
+                    marginTop: '4px',
+                    fontSize: '0.75rem',
+                    fontWeight: 500
                   }
                 }}
               />

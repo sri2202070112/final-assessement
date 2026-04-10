@@ -1,6 +1,5 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography, Button, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { HomeOutlined } from '@ant-design/icons';
 import { COLORS } from '../../theme/color';
 import logo from '../../assets/logo.png';
 
@@ -8,78 +7,67 @@ export default function NotFound() {
   const navigate = useNavigate();
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh', 
-        backgroundColor: '#F8F9FA',
-        textAlign: 'center',
-        p: 3
-      }}
-    >
-      <Box 
-        sx={{ 
-          backgroundColor: '#fff', 
-          p: 6, 
-          borderRadius: '2px',
-          border: '1px solid #e0e0e0',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-          maxWidth: '500px',
-          width: '100%'
-        }}
-      >
-        <img src={logo} alt="PNB Logo" style={{ height: 48, marginBottom: 32 }} />
+    <Box sx={{ 
+      height: '100vh', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      backgroundColor: '#f8f9fa',
+      textAlign: 'center'
+    }}>
+      <Container maxWidth="sm">
+        {/* PNB Branding */}
+        <Box sx={{ mb: 6 }}>
+          <img src={logo} alt="PNB Logo" style={{ height: 48, objectFit: 'contain' }} />
+        </Box>
+
+        <Box sx={{ position: 'relative', mb: 2 }}>
+          <Typography 
+            variant="h1" 
+            sx={{ 
+              fontSize: { xs: '80px', md: '120px' }, 
+              fontWeight: 800, 
+              color: COLORS.PRIMARY, 
+              opacity: 0.08, 
+              lineHeight: 1,
+              userSelect: 'none'
+            }}
+          >
+            404
+          </Typography>
+          <Typography 
+            variant="h4" 
+            sx={{ 
+              fontWeight: 700, 
+              color: '#1a1a1a', 
+              position: 'absolute', 
+              top: '50%', 
+              left: '50%', 
+              transform: 'translate(-50%, -10%)',
+              width: '100%',
+              fontSize: { xs: '1.5rem', md: '2rem' }
+            }}
+          >
+            Oops! Page Not Found
+          </Typography>
+        </Box>
         
-        <Typography 
-          variant="h1" 
-          sx={{ 
-            fontSize: '5rem', 
-            fontWeight: 700, 
-            color: COLORS.PRIMARY,
-            lineHeight: 1,
-            mb: 1
-          }}
-        >
-          404
+        <Typography sx={{ color: '#595959', mb: 5, maxWidth: '400px', mx: 'auto', fontSize: '1rem', lineHeight: 1.6 }}>
+          The page you are looking for doesn't exist or has been moved. Check the URL or navigate back to safety.
         </Typography>
-        
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            fontWeight: 600, 
-            color: '#1a1a1a', 
-            mb: 1.5 
-          }}
-        >
-          Page Not Found
-        </Typography>
-        
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            color: '#666', 
-            mb: 4,
-            fontSize: '0.9rem'
-          }}
-        >
-          The page you are looking for might have been removed or is temporarily unavailable.
-        </Typography>
-        
+
         <Button
           variant="contained"
-          startIcon={<HomeOutlined />}
           onClick={() => navigate('/dashboard')}
           sx={{
             backgroundColor: COLORS.PRIMARY,
+            color: '#fff',
+            px: 5,
+            py: 1.5,
+            borderRadius: '4px',
             textTransform: 'none',
-            px: 4,
-            py: 1,
-            borderRadius: '2px',
-            fontSize: '0.85rem',
-            fontWeight: 500,
+            fontWeight: 600,
+            fontSize: '0.95rem',
             boxShadow: 'none',
             '&:hover': {
               backgroundColor: COLORS.PRIMARY,
@@ -90,7 +78,7 @@ export default function NotFound() {
         >
           Back to Dashboard
         </Button>
-      </Box>
+      </Container>
     </Box>
   );
 }
