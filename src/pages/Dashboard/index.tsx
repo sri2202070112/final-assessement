@@ -224,7 +224,7 @@ export default function Dashboard() {
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>Total No Of Transaction</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.75rem' }}>
+            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.75rem' }}>
               {stats.totalTransactions.toLocaleString()}
             </Typography>
           </Card>
@@ -248,7 +248,7 @@ export default function Dashboard() {
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>Total Amount</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.75rem' }}>
+            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.75rem' }}>
               {stats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Typography>
           </Card>
