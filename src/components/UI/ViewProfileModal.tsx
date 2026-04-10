@@ -11,6 +11,7 @@ import {
   Grid,
 } from '@mui/material';
 import { COLORS } from '../../theme/color';
+import { store } from '../../utils/store';
 
 interface ViewProfileModalProps {
   open: boolean;
@@ -18,22 +19,24 @@ interface ViewProfileModalProps {
 }
 
 export default function ViewProfileModal({ open, onClose }: ViewProfileModalProps) {
+  const user = store.getUserDetails();
+
   const profileData = {
     basic: [
-      { label: 'Name', value: 'Stebin Ben' },
-      { label: 'Phone', value: '+91 9398239231' },
+      { label: 'Name', value: user?.beneficiary_name || user?.merchant_name || 'N/A' },
+      { label: 'Phone', value: user?.mobile_number || 'N/A' },
     ],
     device: [
-      { label: 'Device Serial Number', value: '456954659876857' },
-      { label: 'Linked Account Number', value: 'XXXXXX6857' },
-      { label: 'UPI ID', value: 'rudransh.panigrahi@pnb' },
-      { label: 'IFSC Code', value: 'PUNB028386' },
-      { label: 'Device Model Name', value: 'Morefun ET389' },
-      { label: 'Device Mobile Number', value: '+91 9398239231' },
-      { label: 'Network Type', value: 'BSNL' },
-      { label: 'Device Status', value: 'Active' },
-      { label: 'Battery Percentage', value: '60%' },
-      { label: 'Network Strength', value: 'Strong' },
+      { label: 'Device Serial Number', value: user?.serial_number || user?.terminal_serial_number || 'N/A' },
+      { label: 'Linked Account Number', value: user?.account_number ? `XXXXXX${user.account_number.slice(-4)}` : 'N/A' },
+      { label: 'UPI ID', value: user?.vpa_id || 'N/A' },
+      { label: 'IFSC Code', value: user?.ifsc || user?.ifsc_code || 'N/A' },
+      { label: 'Device Model Name', value: user?.model_name || 'Morefun ET389' },
+      { label: 'Device Mobile Number', value: user?.mobile_number || 'N/A' },
+      { label: 'Network Type', value: user?.network_type || 'N/A' },
+      { label: 'Device Status', value: user?.status || 'Active' },
+      { label: 'Battery Percentage', value: user?.battery_percentage || 'N/A' },
+      { label: 'Network Strength', value: user?.network_strength || 'N/A' },
     ],
   };
 

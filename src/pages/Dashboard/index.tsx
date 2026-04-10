@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [vpaOptions, setVpaOptions] = useState<string[]>([]);
   const [showVpaModal, setShowVpaModal] = useState(false);
   const [tempSelectedVpaIndex, setTempSelectedVpaIndex] = useState(0);
+  const [fullVpaData, setFullVpaData] = useState<any[]>([]); // Added state for full data
 
   const [timeAnchorEl, setTimeAnchorEl] = useState<null | HTMLElement>(null);
   const isTimeMenuOpen = Boolean(timeAnchorEl);
@@ -124,6 +125,7 @@ export default function Dashboard() {
         const parsedData = JSON.parse(decryptedData);
         
         if (parsedData.data && parsedData.data.length > 0) {
+          setFullVpaData(parsedData.data);
           store.setUserDetails(parsedData.data[0]);
 
           const fetchedVpas = parsedData.data.map((item: any) => item.vpa_id).filter(Boolean);
@@ -149,6 +151,12 @@ export default function Dashboard() {
       getvpaid();
     }
   }, [auth.isAuthenticated]);
+
+  useEffect(() => {
+    if (fullVpaData.length > 0) {
+      store.setUserDetails(fullVpaData[selectedVpaIndex]);
+    }
+  }, [selectedVpaIndex, fullVpaData]);
 
   useEffect(() => {
     if (vpaOptions.length > 0) {
