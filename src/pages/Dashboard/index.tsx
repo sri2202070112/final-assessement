@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { COLORS } from '../../theme/color';
 import { useAuth } from 'react-oidc-context';
 import { decryptRequest, encryptResponse } from '../../utils/crypto';
-import { ENCRYPTION_KEY, FETCH_USER_BY_ID, PASS_KEY } from '../../config/config';
+import { ENCRYPTION_KEY, FETCH_USER_BY_ID, PASS_KEY, FETCH_REPORT } from '../../config/config';
 import { store } from '../../utils/store';
 
 export default function Dashboard() {
@@ -19,6 +19,11 @@ export default function Dashboard() {
   const isTimeMenuOpen = Boolean(timeAnchorEl);
   const [selectedTime, setSelectedTime] = useState('Today');
 
+  const [stats, setStats] = useState({
+    totalTransactions: 0,
+    totalAmount: 0
+  });
+
   const auth = useAuth();
 
   const handleMenuClose = (index?: number) => {
@@ -32,6 +37,68 @@ export default function Dashboard() {
     setTimeAnchorEl(null);
     if (time) {
       setSelectedTime(time);
+    }
+  };
+
+  const fetchDashboardStats = async () => {
+    try {
+      const vpa = vpaOptions[selectedVpaIndex];
+      if (!vpa) return;
+
+      const today = new Date();
+      let startDateStr = '';
+      let endDateStr = '';
+
+      const formatApiDate = (date: Date) => {
+        const d = date.getDate().toString().padStart(2, '0');
+        const m = (date.getMonth() + 1).toString().padStart(2, '0');
+        const y = date.getFullYear();
+        return `${d}/${m}/${y}`;
+      };
+
+      if (selectedTime === 'Today') {
+        startDateStr = formatApiDate(today);
+        endDateStr = formatApiDate(today);
+      } else if (selectedTime === 'Yesterday') {
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        startDateStr = formatApiDate(yesterday);
+        endDateStr = formatApiDate(yesterday);
+      }
+
+      const rawPayload = {
+        "startDate": startDateStr,
+        "endDate": endDateStr,
+        "vpa_id": vpa,
+        "mode": "both"
+      }
+
+      const response = await fetch(FETCH_REPORT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Pass_key': PASS_KEY,
+          'Authorization': auth.user?.access_token || '',
+        },
+        body: JSON.stringify(rawPayload),
+      });
+
+      const jsonResponse = await response.json();
+      if (jsonResponse.data && Array.isArray(jsonResponse.data)) {
+        const totalCount = jsonResponse.data.length;
+        const totalAmt = jsonResponse.data.reduce((acc: number, curr: any) => {
+          const val = parseFloat(curr.Transaction_Amount) || 0;
+          return acc + val;
+        }, 0);
+        setStats({
+          totalTransactions: totalCount,
+          totalAmount: totalAmt
+        });
+      } else {
+        setStats({ totalTransactions: 0, totalAmount: 0 });
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
     }
   };
 
@@ -83,6 +150,12 @@ export default function Dashboard() {
     }
   }, [auth.isAuthenticated]);
 
+  useEffect(() => {
+    if (vpaOptions.length > 0) {
+      fetchDashboardStats();
+    }
+  }, [vpaOptions, selectedVpaIndex, selectedTime]);
+
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', backgroundColor: '#f8f9fa', pt: '2px', px: '32px', boxSizing: 'border-box' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 1.5 }}>
@@ -97,7 +170,7 @@ export default function Dashboard() {
                 alignItems: 'center',
                 gap: 1.5,
                 border: '1px solid #d9d9d9',
-                borderRadius: '4px',
+                borderRadius: '3px',
                 padding: '4px 12px',
                 cursor: 'pointer',
                 backgroundColor: '#fff',
@@ -120,7 +193,7 @@ export default function Dashboard() {
             alignItems: 'center',
             gap: 1,
             border: '1px solid #e0e0e0',
-            borderRadius: '4px',
+            borderRadius: '2px',
             backgroundColor: '#fff',
             px: 1.5,
             py: 0.5,
@@ -151,7 +224,9 @@ export default function Dashboard() {
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>Total No Of Transaction</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.75rem' }}>20.7K</Typography>
+            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.75rem' }}>
+              {stats.totalTransactions.toLocaleString()}
+            </Typography>
           </Card>
         </Grid>
 
@@ -173,7 +248,9 @@ export default function Dashboard() {
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>Total Amount</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.75rem' }}>76,000 cr</Typography>
+            <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.75rem' }}>
+              {stats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Typography>
           </Card>
         </Grid>
       </Grid>
