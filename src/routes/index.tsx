@@ -9,7 +9,7 @@ import LanguageUpdate from '../pages/LanguageUpdate';
 import CallbackPage from '../pages/Callback/Callback';
 import ProtectedRoute from './ProtectedRoutes';
 import HelpSupport from '../pages/HelpSupport';
-
+import NotFound from '../pages/NotFound';
 
 export default function ThemeRoutes() {
   return useRoutes([
@@ -60,6 +60,10 @@ export default function ThemeRoutes() {
           element: <HelpSupport />
         }
       ]
+    },
+    {
+      path: '*',
+      element: <NotFound />
     }
   ]);
 }
