@@ -115,9 +115,9 @@ export default function LanguageUpdate() {
       if (jsonResponse.ResponseData) {
         const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
         const parsedData = JSON.parse(decryptedData);
-        
+
         setApiMessage(parsedData.message || 'Processing Request');
-        setIsSuccess(parsedData.result === 'success'||parsedData.result === 'failed');
+        setIsSuccess(parsedData.result === 'success' || parsedData.result === 'failed');
         setOpenSuccess(true);
 
         if (parsedData.result === 'success') {

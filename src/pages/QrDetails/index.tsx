@@ -16,6 +16,10 @@ import logo from '../../assets/logo.png';
 export default function QrDetails() {
   const [qrType, setQrType] = useState('static');
   const [amount, setAmount] = useState('');
+  const [isGenerated, setIsGenerated] = useState(false); // Controls whether the QR is shown
+  const [validUntil, setValidUntil] = useState(''); // Stores the expiry time for dynamic QR
+  const [errorText, setErrorText] = useState(''); // Stores validation error messages
+
   /**
    * Validates the user's input to ensure only positive numbers are entered,
    * up to a maximum limit of 100,000.
