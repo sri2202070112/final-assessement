@@ -16,7 +16,8 @@ import {
   Select,
   MenuItem,
   Chip,
-  IconButton
+  IconButton,
+  Skeleton
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -59,6 +60,7 @@ export default function TransactionReport() {
   const [startDate, setStartDate] = useState(getTodayDate());
   const [endDate, setEndDate] = useState(getTodayDate());
   const [monthlyRange, setMonthlyRange] = useState('1');
+  const [isLoading, setIsLoading] = useState(true);
   const auth = useAuth()
 
   const totalPages = Math.max(1, Math.ceil(transactions.length / rowsPerPage));
@@ -108,6 +110,7 @@ export default function TransactionReport() {
    */
   const fetchReport = async (sDate?: string, eDate?: string) => {
     try {
+      setIsLoading(true);
       const start = sDate || startDate;
       const end = eDate || endDate;
       const rawPayload = {
@@ -129,8 +132,11 @@ export default function TransactionReport() {
       if (jsonResponse.data) {
         setTransactions(jsonResponse.data);
       }
+      // Ensure shimmer is visible for a consistent premium feel
+      setTimeout(() => setIsLoading(false), 800);
     } catch (error) {
-      console.log(error)
+      console.log(error);
+      setIsLoading(false);
     }
   }
 
@@ -329,7 +335,19 @@ export default function TransactionReport() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {displayedTransactions.length > 0 ? (
+                {isLoading ? (
+                  // Show 5 skeleton rows while the table is "shimmering"
+                  [...Array(5)].map((_, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell><Skeleton variant="text" width={20} /></TableCell>
+                      <TableCell><Skeleton variant="text" width={150} /></TableCell>
+                      <TableCell><Skeleton variant="text" width={150} /></TableCell>
+                      <TableCell><Skeleton variant="text" width={80} /></TableCell>
+                      <TableCell><Skeleton variant="text" width={120} /></TableCell>
+                      <TableCell><Skeleton variant="rectangular" width={60} height={20} sx={{ borderRadius: '10px' }} /></TableCell>
+                    </TableRow>
+                  ))
+                ) : displayedTransactions.length > 0 ? (
                   displayedTransactions.map((row, index) => (
                     <TableRow key={row.Transaction_Id || index} sx={{ '&:hover': { backgroundColor: '#fafafa' } }}>
                       <TableCell sx={{ fontSize: '0.75rem', py: 1 }}>{startIndex + index + 1}</TableCell>

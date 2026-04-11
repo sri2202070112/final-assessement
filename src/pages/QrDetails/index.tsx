@@ -7,6 +7,7 @@ import {
   FormControlLabel,
   Button,
   TextField,
+  Skeleton
 } from '@mui/material';
 import { User } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -22,6 +23,7 @@ export default function QrDetails() {
   const [isGenerated, setIsGenerated] = useState(false); // Does the QR code exist yet?
   const [timeLeft, setTimeLeft] = useState(0); // Countdown for when the dynamic QR expires
   const [errorText, setErrorText] = useState(''); // Error messages like "Please enter a number"
+  const [isPageLoading, setIsPageLoading] = useState(true); // Loading state for consistent shimmer
 
   // This part handles the countdown timer for the Dynamic QR (e.g. 5:00, 4:59...)
   useEffect(() => {
@@ -43,6 +45,13 @@ export default function QrDetails() {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // Initial load shimmer
+  useEffect(() => {
+    setIsPageLoading(true);
+    const timer = setTimeout(() => setIsPageLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   // This checks if the user typed a valid number for the amount
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,8 +83,12 @@ export default function QrDetails() {
   // When 'Generate' is clicked, we start the process
   const handleGenerate = () => {
     if (!amount || parseInt(amount, 10) <= 0) return;
-    setTimeLeft(300); // Give the customer 5 minutes to pay
-    setIsGenerated(true); // Show the QR code on the screen
+    setIsPageLoading(true); // Show shimmer while "generating"
+    setTimeout(() => {
+      setTimeLeft(300); // Give the customer 5 minutes to pay
+      setIsGenerated(true); // Show the QR code on the screen
+      setIsPageLoading(false);
+    }, 800);
   };
 
   // This lets the merchant download the QR code so they can print it
@@ -101,6 +114,10 @@ export default function QrDetails() {
   // If the user switches between Static/Dynamic, hide the old QR code
   useEffect(() => {
     setIsGenerated(false);
+    if (qrType === 'static') {
+      setIsPageLoading(true);
+      setTimeout(() => setIsPageLoading(false), 800);
+    }
   }, [qrType]);
 
   return (
@@ -148,7 +165,22 @@ export default function QrDetails() {
       {/* Main area that shows the finished QR ticket */}
       <Box sx={{ flexGrow: 1, backgroundColor: '#fff', border: '1px solid #f0f0f0', borderRadius: '4px', display: 'flex', justifyContent: 'center', p: 4, pt: 2 }}>
         
-        {qrType === 'static' ? (
+        {isPageLoading ? (
+          /* Loading Skeleton for QR Ticket */
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff', width: '380px', border: '1px solid #f0f0f0', p: 4, pb: 6 }}>
+            <Skeleton variant="rectangular" width={120} height={48} sx={{ mb: 4 }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3.5 }}>
+              <Skeleton variant="circular" width={34} height={34} />
+              <Skeleton variant="text" width={150} height={20} />
+            </Box>
+            <Skeleton variant="rectangular" width={260} height={260} sx={{ mb: 3 }} />
+            <Skeleton variant="rectangular" width={160} height={36} sx={{ mb: 6 }} />
+            <Box sx={{ textAlign: 'center' }}>
+              <Skeleton variant="text" width={80} sx={{ mx: 'auto' }} />
+              <Skeleton variant="rectangular" width={100} height={32} sx={{ mx: 'auto', mt: 1 }} />
+            </Box>
+          </Box>
+        ) : qrType === 'static' ? (
           /* Static QR Ticket View */
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff', width: '380px', border: '1px solid #f0f0f0', p: 4, pb: 6 }}>
             {/* Branding */}

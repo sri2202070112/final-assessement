@@ -1,4 +1,4 @@
-import { Box, Typography, Paper, TextField, MenuItem, Select, Button, Grid, Dialog, DialogContent } from '@mui/material';
+import { Box, Typography, Paper, TextField, MenuItem, Select, Button, Grid, Dialog, DialogContent, Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { COLORS } from '../../theme/color';
@@ -28,6 +28,8 @@ export default function LanguageUpdate() {
   const [isSuccess, setIsSuccess] = useState(true);
   // This helps us show a "Loading" state when we are waiting for the server
   const [isProcessing, setIsProcessing] = useState(false);
+  // Single loading state for all fields to ensure they shimmer together
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   // This part handles the login/security stuff
   const auth = useAuth();
@@ -41,10 +43,21 @@ export default function LanguageUpdate() {
 
   // Whenever the device serial number changes, we automatically fetch the language info for that device
   useEffect(() => {
-    if (userData?.serial_number) {
-      fetchLanguage(); // Get the list of languages
-      fetchCurrentLanguage(); // Get the current active language
-    }
+    const initData = async () => {
+      if (userData?.serial_number) {
+        setIsPageLoading(true);
+        // We wait for both APIs to finish so the shimmer time is consistent
+        await Promise.all([
+          fetchLanguage(),
+          fetchCurrentLanguage()
+        ]);
+        // Small delay to make sure the user actually sees the shimmer (better UX)
+        setTimeout(() => setIsPageLoading(false), 800);
+      } else {
+        setIsPageLoading(true);
+      }
+    };
+    initData();
   }, [userData?.serial_number]);
 
   // This function is called when the user clicks the "Update" button
@@ -187,21 +200,25 @@ export default function LanguageUpdate() {
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 VPA ID
               </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                value={userData?.vpa_id || ''}
-                slotProps={{ input: { readOnly: true } }} // This makes it so we can only read, not type
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    height: 44,
-                    backgroundColor: '#fafafa',
-                    borderRadius: '2px',
-                    '& fieldset': { borderColor: '#d9d9d9' },
-                  },
-                  '& .MuiOutlinedInput-input': { color: '#595959', fontSize: '0.85rem' }
-                }}
-              />
+              {isPageLoading ? (
+                <Skeleton variant="rectangular" height={44} sx={{ borderRadius: '2px' }} />
+              ) : (
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={userData?.vpa_id || ''}
+                  slotProps={{ input: { readOnly: true } }} // This makes it so we can only read, not type
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      height: 44,
+                      backgroundColor: '#fafafa',
+                      borderRadius: '2px',
+                      '& fieldset': { borderColor: '#d9d9d9' },
+                    },
+                    '& .MuiOutlinedInput-input': { color: '#595959', fontSize: '0.85rem' }
+                  }}
+                />
+              )}
             </Box>
           </Grid>
 
@@ -211,21 +228,25 @@ export default function LanguageUpdate() {
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 Device Serial Number
               </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                value={userData?.serial_number || ''}
-                slotProps={{ input: { readOnly: true } }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    height: 44,
-                    backgroundColor: '#fafafa',
-                    borderRadius: '2px',
-                    '& fieldset': { borderColor: '#d9d9d9' },
-                  },
-                  '& .MuiOutlinedInput-input': { color: '#595959', fontSize: '0.85rem' }
-                }}
-              />
+              {isPageLoading ? (
+                <Skeleton variant="rectangular" height={44} sx={{ borderRadius: '2px' }} />
+              ) : (
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={userData?.serial_number || ''}
+                  slotProps={{ input: { readOnly: true } }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      height: 44,
+                      backgroundColor: '#fafafa',
+                      borderRadius: '2px',
+                      '& fieldset': { borderColor: '#d9d9d9' },
+                    },
+                    '& .MuiOutlinedInput-input': { color: '#595959', fontSize: '0.85rem' }
+                  }}
+                />
+              )}
             </Box>
           </Grid>
 
@@ -235,21 +256,25 @@ export default function LanguageUpdate() {
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 Current Language
               </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                value={currentLanguage || ''}
-                slotProps={{ input: { readOnly: true } }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    height: 44,
-                    backgroundColor: '#fafafa',
-                    borderRadius: '2px',
-                    '& fieldset': { borderColor: '#d9d9d9' },
-                  },
-                  '& .MuiOutlinedInput-input': { color: '#595959', fontSize: '0.85rem' }
-                }}
-              />
+              {isPageLoading ? (
+                <Skeleton variant="rectangular" height={44} sx={{ borderRadius: '2px' }} />
+              ) : (
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={currentLanguage || ''}
+                  slotProps={{ input: { readOnly: true } }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      height: 44,
+                      backgroundColor: '#fafafa',
+                      borderRadius: '2px',
+                      '& fieldset': { borderColor: '#d9d9d9' },
+                    },
+                    '& .MuiOutlinedInput-input': { color: '#595959', fontSize: '0.85rem' }
+                  }}
+                />
+              )}
             </Box>
           </Grid>
 
@@ -259,41 +284,45 @@ export default function LanguageUpdate() {
               <Typography sx={{ color: '#8c8c8c', fontSize: '0.8rem', mb: 1, fontWeight: 500 }}>
                 Language Update
               </Typography>
-              <Select
-                fullWidth
-                displayEmpty
-                value={targetLanguage}
-                onChange={(e) => setTargetLanguage(e.target.value)} // When user picks a language, we remember it
-                sx={{
-                  height: 44,
-                  backgroundColor: '#fff',
-                  fontSize: '0.85rem',
-                  borderRadius: '4px',
-                  color: targetLanguage ? '#262626' : '#bfbfbf',
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9 !important', borderWidth: '1px' },
-                }}
-                MenuProps={{
-                  disableScrollLock: true,
-                  PaperProps: {
-                    sx: {
-                      mt: 1,
-                      width: 350,
-                      height: 300,
-                      boxShadow: '0px 9px 28px 8px #0000000D, 0px 6px 16px 0px #00000014, 0px 3px 6px -4px #0000001F',
+              {isPageLoading ? (
+                <Skeleton variant="rectangular" height={44} sx={{ borderRadius: '4px' }} />
+              ) : (
+                <Select
+                  fullWidth
+                  displayEmpty
+                  value={targetLanguage}
+                  onChange={(e) => setTargetLanguage(e.target.value)} // When user picks a language, we remember it
+                  sx={{
+                    height: 44,
+                    backgroundColor: '#fff',
+                    fontSize: '0.85rem',
+                    borderRadius: '4px',
+                    color: targetLanguage ? '#262626' : '#bfbfbf',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e0e0e0' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#d9d9d9 !important', borderWidth: '1px' },
+                  }}
+                  MenuProps={{
+                    disableScrollLock: true,
+                    PaperProps: {
+                      sx: {
+                        mt: 1,
+                        width: 350,
+                        height: 300,
+                        boxShadow: '0px 9px 28px 8px #0000000D, 0px 6px 16px 0px #00000014, 0px 3px 6px -4px #0000001F',
+                      }
                     }
-                  }
-                }}
-              >
-                <MenuItem value="" disabled sx={{ display: 'none' }}>Select Language Update</MenuItem>
-                {/* Loop through all available languages and show them as options */}
-                {Array.isArray(languages) && languages.map((lang) => (
-                  <MenuItem key={lang} value={lang} disabled={lang.toUpperCase() === currentLanguage.toUpperCase()}>
-                    {formatLanguageName(lang)}
-                  </MenuItem>
-                ))}
-              </Select>
+                  }}
+                >
+                  <MenuItem value="" disabled sx={{ display: 'none' }}>Select Language Update</MenuItem>
+                  {/* Loop through all available languages and show them as options */}
+                  {Array.isArray(languages) && languages.map((lang) => (
+                    <MenuItem key={lang} value={lang} disabled={lang.toUpperCase() === currentLanguage.toUpperCase()}>
+                      {formatLanguageName(lang)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
             </Box>
           </Grid>
 

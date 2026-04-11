@@ -1,4 +1,4 @@
-import { Box, Card, Typography, Grid, MenuItem, Menu, Radio, Dialog, DialogTitle, DialogContent, DialogActions, Button, RadioGroup, FormControlLabel } from '@mui/material';
+import { Box, Card, Typography, Grid, MenuItem, Menu, Radio, Dialog, DialogTitle, DialogContent, DialogActions, Button, RadioGroup, FormControlLabel, Skeleton } from '@mui/material';
 import { ArrowLeftRight, ChevronDown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { COLORS } from '../../theme/color';
@@ -13,11 +13,19 @@ export default function Dashboard() {
   // These states help us manage the VPA selection menu (the dropdown top left)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
-  const [selectedVpaIndex, setSelectedVpaIndex] = useState<number | null>(null); // Which VPA is active
-  const [vpaOptions, setVpaOptions] = useState<string[]>([]); // The list of VPA IDs
+  const [fullVpaData, setFullVpaData] = useState<any[]>([]); // The full data of all VPAs
+
+  // Check if we have a saved VPA in the "notebook" immediately
+  const initialUser = store.getUserDetails();
+  // We ALWAYS show the shimmer initially for a consistent feel as requested
+  const [isLoadingVpas, setIsLoadingVpas] = useState(true); 
+  const [vpaOptions, setVpaOptions] = useState<string[]>(initialUser?.vpa_id ? [initialUser.vpa_id] : []);
+  const [selectedVpaIndex, setSelectedVpaIndex] = useState<number | null>(initialUser?.vpa_id ? 0 : null);
+
+  // Loading stats
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [showVpaModal, setShowVpaModal] = useState(false); // Should we show the 'Select VPA' popup?
   const [tempSelectedVpaIndex, setTempSelectedVpaIndex] = useState(0); // Temporary selection in the popup
-  const [fullVpaData, setFullVpaData] = useState<any[]>([]); // The full data of all VPAs
 
   // These states handle the time filter (Choosing 'Today' or 'Yesterday')
   const [timeAnchorEl, setTimeAnchorEl] = useState<null | HTMLElement>(null);
@@ -55,6 +63,8 @@ export default function Dashboard() {
       if (selectedVpaIndex === null) return;
       const vpa = vpaOptions[selectedVpaIndex];
       if (!vpa) return;
+
+      setIsLoadingStats(true);
 
       const today = new Date();
       let startDateStr = '';
@@ -112,14 +122,18 @@ export default function Dashboard() {
       } else {
         setStats({ totalTransactions: 0, totalAmount: 0 }); // Reset if no data
       }
+      // Consistent shimmer timing
+      setTimeout(() => setIsLoadingStats(false), 800);
     } catch (error) {
       console.error("Problem getting dashboard numbers:", error);
+      setIsLoadingStats(false);
     }
   };
 
   // This function gets the list of VPAs that belong to this merchant
   const getvpaid = async () => {
     try {
+      setIsLoadingVpas(true);
       const rawPayload = { mobile_number: auth.user?.profile?.user_name };
       // Encrypting for security
       const encryptedData = encryptResponse(JSON.stringify(rawPayload), ENCRYPTION_KEY);
@@ -154,6 +168,7 @@ export default function Dashboard() {
               const idx = fetchedVpas.indexOf(savedUser.vpa_id);
               if (idx !== -1) {
                 setSelectedVpaIndex(idx); // Use the saved one
+                setIsLoadingVpas(false);
                 return;
               }
             }
@@ -166,8 +181,11 @@ export default function Dashboard() {
           }
         }
       }
+      // Consistently resolve the VPA shimmer after 800ms
+      setTimeout(() => setIsLoadingVpas(false), 800);
     } catch (error) {
       console.error("Problem getting VPA list:", error);
+      setIsLoadingVpas(false);
     }
   };
 
@@ -202,19 +220,23 @@ export default function Dashboard() {
           <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.25rem', mb: 3.5 }}>Dashboard</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: '20px' }}>
             <Typography variant="body2" sx={{ color: '#666', fontWeight: 600 }}>VPA ID :</Typography>
-            <Box
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              sx={{
-                display: 'inline-flex', alignItems: 'center', gap: 1.5,
-                border: '1px solid #d9d9d9', borderRadius: '3px', padding: '4px 12px',
-                cursor: 'pointer', backgroundColor: '#fff'
-              }}
-            >
-              <Typography sx={{ color: '#333', fontSize: '0.9rem', fontWeight: 500 }}>
-                {selectedVpaIndex !== null ? vpaOptions[selectedVpaIndex] : 'N/A'}
-              </Typography>
-              <ChevronDown size={14} color="#666" />
-            </Box>
+            {isLoadingVpas ? (
+              <Skeleton variant="rectangular" width={150} height={32} sx={{ borderRadius: '3px' }} />
+            ) : (
+              <Box
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+                sx={{
+                  display: 'inline-flex', alignItems: 'center', gap: 1.5,
+                  border: '1px solid #d9d9d9', borderRadius: '3px', padding: '4px 12px',
+                  cursor: 'pointer', backgroundColor: '#fff'
+                }}
+              >
+                <Typography sx={{ color: '#333', fontSize: '0.9rem', fontWeight: 500 }}>
+                  {selectedVpaIndex !== null ? vpaOptions[selectedVpaIndex] : 'N/A'}
+                </Typography>
+                <ChevronDown size={14} color="#666" />
+              </Box>
+            )}
           </Box>
         </Box>
 
@@ -249,9 +271,13 @@ export default function Dashboard() {
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.9rem' }}>Total No Of Transaction</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.6rem' }}>
-              {stats.totalTransactions.toLocaleString()}
-            </Typography>
+            {isLoadingStats ? (
+              <Skeleton variant="text" width={80} height={40} />
+            ) : (
+              <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.6rem' }}>
+                {stats.totalTransactions.toLocaleString()}
+              </Typography>
+            )}
           </Card>
         </Grid>
 
@@ -274,9 +300,13 @@ export default function Dashboard() {
               </Box>
               <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.9rem' }}>Total Amount</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.6rem' }}>
-              {stats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </Typography>
+            {isLoadingStats ? (
+              <Skeleton variant="text" width={120} height={40} />
+            ) : (
+              <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.6rem' }}>
+                {stats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </Typography>
+            )}
           </Card>
         </Grid>
       </Grid>
