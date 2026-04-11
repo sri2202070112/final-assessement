@@ -5,6 +5,7 @@ import { useAuth } from "react-oidc-context";
 import { COLORS } from '../../theme/color';
 import ViewProfileModal from '../../components/UI/ViewProfileModal';
 import { store } from '../../utils/store';
+import avatar from '../../assets/avatar.png';
 
 const drawerWidth = 240;
 
@@ -93,8 +94,9 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
             '&:hover': { backgroundColor: '#f9f9f9' }
           }}
         >
+          {/* This is the user's profile picture. We use a custom avatar image here. */}
           <Avatar
-            src="https://mui.com/static/images/avatar/1.jpg"
+            src={avatar}
             sx={{ width: 32, height: 32, border: '1px solid #f0f0f0' }}
           />
           <Typography variant="body2" sx={{ fontWeight: 500, color: '#333', fontSize: '0.85rem' }}>
