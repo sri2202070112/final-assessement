@@ -1,73 +1,48 @@
-# My PNB Merchant Project Diary (Final Version)
+# My PNB Merchant Project Journey 🚀
 
-I wanted to write down exactly how I built this project so anyone . I tried to make it look very high-end the code underneath is where the magic happens.
-
----
-
-### Phase 1: The Secret Key (Security and Login)
-Everything starts with security. Since we are dealing with bank stuff, we can't just send information in plain English!
-
-*   **Encryption (The Secret Coder):** I used a special tool called `Crypto-JS`. Every time our app wants to talk to the bank's server, it "scrambles" the data using a secret key. This way, if a hacker tries to peek, they only see gibberish!
-*   **The Access Token:** When you log in, the server gives us a "Digital Key" (Access Token). I made the app remember this key so we don't have to ask for a password every single time we click a new page.
+I wanted to write down how I actually built this app. Honestly, when I started, I was pretty overwhelmed with all the bank terminology and encryption stuff, but I’m really proud of how it turned out. It looks super professional, but I kept the code clean and commented so I don't forget how I did it!
 
 ---
 
-### Phase 2: Hiding Our Secrets (.env and config.ts)
-I learned that you should never put secret passwords or server addresses directly in your code. If you do, everyone can see them! 
+### First thing I had to handle: The "Secret Coder" (Security)
+The biggest challenge was security. Since this is for a bank, you can't just send information around in plain text. I used a tool called `Crypto-JS` to "scramble" (encrypt) everything. Every time my app talks to the server, it puts the data through this secret coder so only the bank can understand it. 
 
-*   **The `.env` File (The Locked Safety Box):** I created a special file called `.env`. Think of this like a locked box where I keep my secret encryption keys and the addresses of the bank's servers. This file is kept private and safe.
-*   **The `config.ts` File (The Key Master):** This file acts as the bridge. It goes to the `.env` box, grabs the keys, and gives them to the rest of the project. This way, if I ever need to change a server address, I only have to change it once in the `.env` box!
+I also had to deal with an "Access Token." Think of it like a digital key that the server gives me when I log in. I made sure the app "holds onto" this key so I don't have to keep logging back in every time I switch pages.
 
----
+### Keeping the keys safe 🗝️
+I learned the hard way that you should **never** put secret keys or server addresses directly in your code. So, I used two special files:
+*   **The `.env` file:** This is like my locked safe. I keep the really secret stuff here, like the encryption keys.
+*   **The `config.ts` file:** This is my "Master of Keys." It goes into the safe, grabs the secrets, and lets the rest of the app use them. If I ever need to move to a new server, I only change it once in the safe!
 
-### Phase 3: Our Pictures and Branding (The PNGs)
-To make the app look professional, I used some important images in the `src/assets` folder:
+### Making it look "PNB" Official
+I used a few custom images to make the app feel real:
+*   The **pnb-logo** is at the top of the sidebar so merchants know they're in the right place.
+*   I added a custom **Avatar** (a cool Memoji with braids and glasses) for the user profile. It just makes the dashboard feel more like a personal app rather than a boring bank tool.
+*   I also used a small **Blur background** logo for when the sidebar is closed up—it keeps things looking tidy.
 
-*   **`logo.png`:** This is the official PNB logo you see at the top of the sidebar. It makes the app look official!
-*   **`avatar.png`:** I added a custom Memoji with glasses and braids as the user's profile picture. It makes the dashboard feel more personal and friendly.
-*   **`blurbg.png`:** I used this small image for the sidebar when it is closed (collapsed). It helps keep the design clean even when things are small.
+### The Dashboard: Where everything happens 📈
+This was my favorite part to build! It looks simple, but it’s doing a lot:
+*   **Fetching the Shops:** I wrote code that takes the user's phone number and asks the bank for all the shops (VPAs) associated with them.
+*   **Doing the Math:** Once I get the transaction list, I wrote a loop to add up all the amounts and count how many payments were made today. It's cool to see real numbers show up on the screen!
 
----
+### The "Flicker" problem and how I fixed it (Skeletons)
+One thing that really bugged me was how the screen would look empty for a split second while waiting for the data. I fixed this by adding **Skeletons**. 
 
-### Phase 4: The Dashboard (My Main Control Center)
-This is where the merchant lands first. It looks simple, but there's a lot of API work here!
+Instead of a blank white box, you see a grey, shimmering shape that looks like the data is about to arrive. I also made sure they shimmer for at least **800 milliseconds**—I found that if they disappear too fast, it looks glitchy. Now, everything stays in place and "resolves" together perfectly. It feels much more premium now.
 
-*   **Finding the Shop (API is Real):** I used a real API called `FETCH_USER_BY_ID`. It takes the merchant's mobile number and asks the bank, "Hey, which shops belong to this person?". The bank replies back with a list of VPA IDs. 
-*   **Calculating the Money (API is Real):** Once we know the shop, we use the `FETCH_REPORT` API. I wrote code to look through all the transactions the bank sends us and add them all up to show the "Total Amount" and "Count". 
+### Reports and Language Updates 🌍
+*   **Reports:** I built a big table that shows every single payment. I even added a download button so the merchant can get a CSV file for their records.
+*   **Language Update:** This was tricky because I had to talk directly to the terminal machine. If the update is still processing, I made the status icon turn **Yellow**, and if it's done, it turns **Green**. 
 
----
-
-### Phase 5: Transaction Reports (The Payment List)
-This page is for merchants who want to see every single payment in detail.
-
-*   **The Big Table (API is Real):** This uses the same `FETCH_REPORT` API as the dashboard. But here, instead of just adding up the total, I show every payment as a row in a clean, white table. 
-
----
-
-### Phase 6: QR Details (Making Payments Easy)
-This page is for when a customer wants to pay by scanning a code.
-
-*   **The QR Image (Dummy):** Right now, the actual QR image you see is a "dummy" placeholder from the internet. It's there to show exactly where the real one will go soon!
-*   **Generating and Timer (UI Logic):** I coded a fun feature where you can type an amount, and it makes a QR just for that price with a 5-minute countdown timer. This is mostly UI logic for now.
+### The "Global Notebook"
+I used something called a "Global Store" (and some `localStorage`) to make the app remember things. For example, if you pick a specific shop on the dashboard and then refresh the page, the app "remembers" it in its notebook so you don't have to pick it again.
 
 ---
 
-### Phase 7: Language Update (Talking to the Machine)
-This is actually one of the most technical parts I did!
+**What I used to build this:**
+*   **React & Vite:** These are the main engines that make the app run fast.
+*   **Material UI (MUI):** This gave me all the cool buttons, inputs, and the shimmering skeletons.
+*   **Lucide & Ant Design Icons:** For all the professional-looking icons.
+*   **Crypto-JS:** My secret weapon for the encryption part.
 
-*   **Checking Current Status (API is Real):** We use the `FETCH_CURRENT_LANGUAGE` API to ask the terminal machine what language it is using right now.
-*   **The Big Update (API is Real):** When you pick a new language and hit "Update", we send a real command using `UPDATE_LANGUAGE`. 
-*   **The Status Modal:** I built a special popup for this. If the bank says "Update is going on," I made the icon turn **Yellow**. If it says "Successful," it turns **Green**. 
-
----
-
-### Phase 8: The Profile and Global Store
-I used a "Global Store" and some `localStorage` (like a small notebook in your browser) to help the app remember things like which VPA you picked, even if you refresh the page!
-
----
-
-**Tech Stack:**
-1. **React & Vite:** The main engine.
-2. **Material UI (MUI):** For the buttons, inputs boosters, and boxes.
-3. **Lucide-React:** For the pretty icons you see everywhere.
-4. **Crypto-JS:** For the scrambling (encryption) part.
+I'm really happy with how this project came together! If I can build this, I feel like I'm finally starting to get the hang of React. 💻🎉
