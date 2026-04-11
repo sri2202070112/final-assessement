@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { COLORS } from '../../theme/color';
 
+// This is how wide the sidebar is when it is open
 const drawerWidth = 240;
 
 interface SidebarProps {
@@ -17,15 +18,12 @@ interface SidebarProps {
   window?: () => Window;
 }
 
+// Custom icon for the QR Code section
 const QRIcon = (props: any) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" {...props}>
-    {/* Top Left Frame */}
     <path d="M2 2H10V10H2V2ZM4 4V8H8V4H4Z" />
-    {/* Top Right Frame */}
     <path d="M14 2H22V10H14V2ZM16 4V8H20V4H16Z" />
-    {/* Bottom Left Frame */}
     <path d="M2 14H10V22H2V14ZM4 16V20H8V16H4Z" />
-    {/* Bottom Right 3x3 Pattern */}
     <rect x="14" y="14" width="2.5" height="2.5" />
     <rect x="19.5" y="14" width="2.5" height="2.5" />
     <rect x="16.75" y="16.75" width="2.5" height="2.5" />
@@ -34,23 +32,8 @@ const QRIcon = (props: any) => (
   </svg>
 );
 
-/**
- * Definition of all the links shown in the sidebar.
- * Includes text, target URL, and the icon to display.
- */
+// This is a list of all the pages we can go to from the sidebar
 const menuItems = [
-  {
-    id: 'language',
-    title: 'Language Update',
-    url: '/language',
-    icon: TranslationOutlined
-  },
-  {
-    id: 'qr-details',
-    title: 'QR Details',
-    url: '/qr-details',
-    icon: QRIcon
-  },
   {
     id: 'dashboard',
     title: 'Dashboard',
@@ -64,6 +47,18 @@ const menuItems = [
     icon: FileTextOutlined
   },
   {
+    id: 'qr-details',
+    title: 'QR Details',
+    url: '/qr-details',
+    icon: QRIcon
+  },
+  {
+    id: 'language',
+    title: 'Language Update',
+    url: '/language',
+    icon: TranslationOutlined
+  },
+  {
     id: 'help',
     title: 'Help & Support',
     url: '/help',
@@ -72,20 +67,23 @@ const menuItems = [
 ];
 
 export default function Sidebar({ open, handleDrawerToggle, window }: SidebarProps) {
-  const location = useLocation(); // Used to detect which page the user is currently on
+  // This tells us which page the user is looking at right now
+  const location = useLocation();
   const container = window !== undefined ? () => window().document.body : undefined;
 
+  // This is the actual list of menu buttons inside the sidebar
   const drawerContent = (
     <Box>
-      {/* PNB Logo at the top of Sidebar */}
+      {/* Show the PNB Logo at the top */}
       <Box sx={{ pt: 1.5, pb: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <img src="/src/assets/logo.png" alt="PNB Logo" style={{ height: 42, objectFit: 'contain' }} />
       </Box>
 
+      {/* Loop through each menu item and create a button for it */}
       <List sx={{ pt: 0, px: 0 }}>
         {menuItems.map((item) => {
           const Icon = item.icon;
-          // Check if this menu item matches the current URL to highlight it
+          // Check if this is the active page so we can highlight it
           const isSelected = location.pathname === item.url || (item.url !== '/dashboard' && location.pathname.includes(item.url));
 
           return (
@@ -95,32 +93,17 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                 to={item.url}
                 selected={isSelected}
                 sx={{
-                  py: 1.5,
-                  px: 4,
-                  position: 'relative',
+                  py: 1.5, px: 4, position: 'relative',
                   '&.Mui-selected': {
-                    backgroundColor: COLORS.PRIMARY,
-                    '&:hover': {
-                      backgroundColor: COLORS.PRIMARY,
-                      opacity: 0.95
-                    },
-                    // The yellow accent line on the right edge (PNB branding)
+                    backgroundColor: COLORS.PRIMARY, // Purple color when selected
+                    '&:hover': { backgroundColor: COLORS.PRIMARY, opacity: 0.95 },
+                    // A small yellow line on the right side when selected
                     '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      bottom: 0,
-                      width: '4px',
-                      backgroundColor: '#FFD700', // PNB Gold/Yellow
+                      content: '""', position: 'absolute', top: 0, right: 0, bottom: 0, width: '4px',
+                      backgroundColor: '#FFD700',
                     },
-                    '& .MuiListItemIcon-root': {
-                      color: '#fff',
-                    },
-                    '& .MuiListItemText-primary': {
-                      color: '#fff',
-                      fontWeight: 500
-                    }
+                    '& .MuiListItemIcon-root': { color: '#fff' },
+                    '& .MuiListItemText-primary': { color: '#fff', fontWeight: 500 }
                   }
                 }}
               >
@@ -155,14 +138,13 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
         }),
       }}
     >
+      {/* This is for mobile phones (it slides over the page) */}
       <Drawer
         container={container}
         variant="temporary"
         open={open}
         onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true,
-        }}
+        ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: 'block', sm: 'none' },
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
@@ -170,6 +152,8 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
       >
         {drawerContent}
       </Drawer>
+
+      {/* This is for computer screens (it stays on the left) */}
       <Drawer
         variant="permanent"
         sx={{
@@ -179,7 +163,6 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
             width: open ? drawerWidth : 60,
             borderRight: '1px solid #f0f0f0',
             backgroundColor: '#fff',
-            boxShadow: 'none',
             overflowX: 'hidden',
             transition: (theme) => theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp,
@@ -189,7 +172,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
         }}
         open={open}
       >
-        {/* The PNB Logo at the top - switches based on whether sidebar is open or closed */}
+        {/* The PNB Logo - it changes if the sidebar is open or closed */}
         <Box sx={{ p: open ? '12px 24px' : '12px 10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img
             src={open ? "/src/assets/logo.png" : "/src/assets/blurbg.png"}
@@ -199,11 +182,11 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
               width: open ? 'auto' : 32,
               borderRadius: open ? 0 : '4px',
               objectFit: 'cover',
-              transition: 'all 0.3s ease'
             }}
           />
         </Box>
 
+        {/* The list of menu buttons */}
         <List sx={{ pt: 1, px: 0 }}>
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -218,32 +201,18 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                   sx={{
                     minHeight: 48,
                     justifyContent: open ? 'initial' : 'center',
-                    px: 2.5,
-                    py: 1.2,
-                    position: 'relative',
+                    px: 2.5, py: 1.2, position: 'relative',
                     '&.Mui-selected': {
                       backgroundColor: COLORS.PRIMARY,
-                      '&:hover': {
-                        backgroundColor: COLORS.PRIMARY,
-                        opacity: 0.95
-                      },
+                      '&:hover': { backgroundColor: COLORS.PRIMARY, opacity: 0.95 },
+                      // The yellow line on the right side
                       '&::after': {
                         display: open ? 'block' : 'none',
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        right: 0,
-                        bottom: 0,
-                        width: '4px',
+                        content: '""', position: 'absolute', top: 0, right: 0, bottom: 0, width: '4px',
                         backgroundColor: '#FFD700',
                       },
-                      '& .MuiListItemIcon-root': {
-                        color: '#fff',
-                      },
-                      '& .MuiListItemText-primary': {
-                        color: '#fff',
-                        fontWeight: 500
-                      }
+                      '& .MuiListItemIcon-root': { color: '#fff' },
+                      '& .MuiListItemText-primary': { color: '#fff' }
                     }
                   }}
                 >
@@ -263,10 +232,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                       opacity: open ? 1 : 0,
                       display: open ? 'block' : 'none'
                     }}
-                    primaryTypographyProps={{
-                      fontSize: '0.8rem',
-                      fontWeight: isSelected ? 500 : 400,
-                    }}
+                    primaryTypographyProps={{ fontSize: '0.8rem' }}
                   />
                 </ListItemButton>
               </ListItem>

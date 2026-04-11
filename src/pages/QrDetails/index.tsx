@@ -13,53 +13,48 @@ import { useState, useEffect } from 'react';
 import { COLORS } from '../../theme/color';
 import logo from '../../assets/logo.png';
 
+// This is the page where merchants can create and see their payment QR codes
 export default function QrDetails() {
-  const [qrType, setQrType] = useState('static');
-  const [amount, setAmount] = useState('');
-  const [isGenerated, setIsGenerated] = useState(false); // Controls whether the QR is shown
-  const [timeLeft, setTimeLeft] = useState(0); // Countdown timer in seconds
-  const [errorText, setErrorText] = useState(''); // Stores validation error messages
+  
+  // States to keep track of what's happening on the page
+  const [qrType, setQrType] = useState('static'); // 'Static' means the QR stays the same, 'Dynamic' means it has an amount
+  const [amount, setAmount] = useState(''); // Stores the amount the user types in
+  const [isGenerated, setIsGenerated] = useState(false); // Does the QR code exist yet?
+  const [timeLeft, setTimeLeft] = useState(0); // Countdown for when the dynamic QR expires
+  const [errorText, setErrorText] = useState(''); // Error messages like "Please enter a number"
 
-  /**
-   * Countdown timer effect for dynamic QR codes.
-   */
+  // This part handles the countdown timer for the Dynamic QR (e.g. 5:00, 4:59...)
   useEffect(() => {
     let timer: any;
+    // If the QR is generated and it's a dynamic one, we start counting down
     if (isGenerated && qrType === 'dynamic' && timeLeft > 0) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        setTimeLeft((prev) => prev - 1); // Subtract 1 second every second
       }, 1000);
     } else if (timeLeft === 0 && isGenerated && qrType === 'dynamic') {
-      setIsGenerated(false); // Hide QR when timer hits zero
+      setIsGenerated(false); // If time runs out, hide the QR code for safety
     }
-    return () => clearInterval(timer);
+    return () => clearInterval(timer); // Stop the timer if we leave the page
   }, [isGenerated, timeLeft, qrType]);
 
+  // Turns seconds into a nice clock format like "2:30"
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  /**
-   * Validates the user's input to ensure only positive numbers are entered,
-   * up to a maximum limit of 100,000.
-   * 
-   * Validation Rules:
-   * 1. Empty input is allowed (clears the field).
-   * 2. Only numbers (0-9) are allowed. We use a 'Regular Expression' (/^\d*$/) to check this.
-   * 3. The amount cannot exceed ₹ 100,000 per QR code for security reasons.
-   */
+  // This checks if the user typed a valid number for the amount
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setErrorText(''); // Reset error on change
+    setErrorText(''); // Clear old errors
 
     if (value === '') {
       setAmount('');
       return;
     }
 
-    // Check if it's numeric
+    // Only allow actual numbers (0 to 9)
     if (!/^\d*$/.test(value)) {
       setErrorText('Only numbers allowed');
       return;
@@ -67,154 +62,82 @@ export default function QrDetails() {
 
     const numValue = parseInt(value, 10);
 
-    // Check limit
+    // Limit the amount to ₹ 100,000 for security
     if (numValue > 100000) {
       setErrorText('Maximum amount allowed is ₹ 100,000');
       return;
     }
 
-    // Valid number
-    setAmount(numValue.toString());
+    setAmount(numValue.toString()); // If it's a good number, save it
   };
 
-  /**
-   * Generates a dynamic QR code with a 2-minute expiry window.
-   * We calculate exactly 2 minutes into the future to create a sense of urgency and 
-   * ensure security for the payment.
-   */
+  // When 'Generate' is clicked, we start the process
   const handleGenerate = () => {
     if (!amount || parseInt(amount, 10) <= 0) return;
-    // Initialize a 5-minute (300 seconds) countdown
-    setTimeLeft(300);
-    setIsGenerated(true);
+    setTimeLeft(300); // Give the customer 5 minutes to pay
+    setIsGenerated(true); // Show the QR code on the screen
   };
 
-  /**
-   * Downloads the QR code as an SVG file.
-   * We fetch the image and convert it to a Blob to bypass cross-origin restrictions on the 'download' attribute.
-   */
+  // This lets the merchant download the QR code so they can print it
   const handleDownload = async () => {
     try {
+      // We fetch the QR image from the server
       const response = await fetch('https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
+      // Name the file nicely so the merchant can find it later
       link.download = `PNB_QR_${qrType}_${new Date().getTime()}.svg`;
       document.body.appendChild(link);
-      link.click();
+      link.click(); // Trigger the actual download
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error('Oops! Download failed:', error);
     }
   };
 
-  // If the user switches between Static/Dynamic, we hide the QR until they click 'Generate' again
+  // If the user switches between Static/Dynamic, hide the old QR code
   useEffect(() => {
     setIsGenerated(false);
   }, [qrType]);
 
   return (
-    <Box sx={{
-      width: '100%',
-      minHeight: '100vh',
-      backgroundColor: '#f8f9fa',
-      display: 'flex',
-      flexDirection: 'column',
-      pt: '2px',
-      px: '24px',
-      boxSizing: 'border-box',
-      overflow: 'auto'
-    }}>
+    <Box sx={{ width: '100%', minHeight: '100vh', backgroundColor: '#f8f9fa', pt: '2px', px: '24px' }}>
+      
+      {/* Page Title */}
       <Typography sx={{ fontWeight: 700, color: '#1a1a1a', mb: 3.5, fontSize: '1.25rem' }}>
         QR Details
       </Typography>
 
-      {/* Filter Section - White Paper on Grey BG */}
-      <Paper elevation={0} sx={{
-        p: '20px 24px',
-        mb: 2.5,
-        borderRadius: '8px',
-        border: '1px solid #f0f0f0',
-        backgroundColor: '#fff'
-      }}>
+      {/* Selector card where user picks Static or Dynamic */}
+      <Paper elevation={0} sx={{ p: '20px 24px', mb: 2.5, borderRadius: '8px', border: '1px solid #f0f0f0', backgroundColor: '#fff' }}>
         <Typography variant="caption" sx={{ color: '#8c8c8c', mb: 1.25, fontWeight: 600, display: 'block', fontSize: '0.85rem' }}>
           Select The Type of QR
         </Typography>
-        <RadioGroup
-          row
-          value={qrType}
-          onChange={(e) => setQrType(e.target.value)}
-          sx={{ mb: qrType === 'dynamic' ? 2 : 0 }}
-        >
-          <FormControlLabel
-            value="static"
-            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />}
-            label={<Typography sx={{ fontSize: '0.85rem', color: '#1a1a1a', fontWeight: 500 }}>Static</Typography>}
-          />
-          <FormControlLabel
-            value="dynamic"
-            control={<Radio size="small" sx={{ p: 0.5, color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />}
-            label={<Typography sx={{ fontSize: '0.85rem', color: '#1a1a1a', fontWeight: 500 }}>Dynamic</Typography>}
-          />
+        <RadioGroup row value={qrType} onChange={(e) => setQrType(e.target.value)}>
+          <FormControlLabel value="static" control={<Radio size="small" sx={{ p:0.5, '&.Mui-checked': { color: COLORS.PRIMARY } }} />} label="Static" />
+          <FormControlLabel value="dynamic" control={<Radio size="small" sx={{ p:0.5, '&.Mui-checked': { color: COLORS.PRIMARY } }} />} label="Dynamic" />
         </RadioGroup>
 
+        {/* If 'Dynamic' is picked, show the amount input field */}
         {qrType === 'dynamic' && (
-          <Box sx={{ ml: 1.5, animation: 'fadeIn 0.3s ease-in-out' }}>
-            <Typography variant="body2" sx={{ color: '#8c8c8c', mb: 2, fontWeight: 500 }}>
-              Enter an amount to instantly generate your dynamic QR code
-            </Typography>
-
+          <Box sx={{ ml: 1.5, mt: 2 }}>
             <Typography variant="caption" sx={{ color: '#595959', mb: 0.5, fontWeight: 600, display: 'block' }}>
               Amount to be collected
             </Typography>
-
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
               <TextField
-                placeholder="Enter the amount to be collected"
+                placeholder="Enter amount"
                 size="small"
                 value={amount}
                 onChange={handleAmountChange}
                 error={!!errorText}
                 helperText={errorText}
-                inputProps={{ inputMode: 'numeric' }}
-                sx={{
-                  width: '300px',
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 0,
-                    height: '36px',
-                    fontSize: '0.85rem',
-                    '& fieldset': { borderColor: errorText ? COLORS.ERROR : '#e4e4e4' },
-                  },
-                  '& .MuiFormHelperText-root': {
-                    marginLeft: 0,
-                    marginTop: '4px',
-                    fontSize: '0.75rem',
-                    fontWeight: 500
-                  }
-                }}
+                sx={{ width: '300px' }}
               />
-              <Button
-                variant="contained"
-                onClick={handleGenerate}
-                sx={{
-                  backgroundColor: COLORS.PRIMARY,
-                  color: '#fff',
-                  textTransform: 'none',
-                  px: 3,
-                  height: '36px',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  borderRadius: '4px',
-                  boxShadow: 'none',
-                  '&:hover': {
-                    backgroundColor: COLORS.PRIMARY,
-                    opacity: 0.9,
-                    boxShadow: 'none'
-                  }
-                }}
-              >
+              <Button variant="contained" onClick={handleGenerate} sx={{ backgroundColor: COLORS.PRIMARY, height: '36px' }}>
                 Generate QR
               </Button>
             </Box>
@@ -222,212 +145,70 @@ export default function QrDetails() {
         )}
       </Paper>
 
-      {/* Main Content Area - White background block as per Image 9 */}
-      {/* The Workspace Area - Shows the actual QR ticket */}
-      <Box sx={{
-        flexGrow: 1,
-        backgroundColor: '#fff',
-        border: '1px solid #f0f0f0',
-        borderRadius: '4px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start', // Shifted to top
-        pt: 2, // Added top padding
-        p: 4
-      }}>
+      {/* Main area that shows the finished QR ticket */}
+      <Box sx={{ flexGrow: 1, backgroundColor: '#fff', border: '1px solid #f0f0f0', borderRadius: '4px', display: 'flex', justifyContent: 'center', p: 4, pt: 2 }}>
+        
         {qrType === 'static' ? (
-          /* Static QR View (with the specific grey border style) */
-          <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            backgroundColor: '#fff',
-            width: '100%',
-            maxWidth: '380px',
-            border: '1px solid #f0f0f0', // Border around content
-            p: 4,
-            pb: 6
-          }}>
-            {/* PNB Branding Header */}
+          /* Static QR Ticket View */
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff', width: '380px', border: '1px solid #f0f0f0', p: 4, pb: 6 }}>
+            {/* Branding */}
             <Box sx={{ mb: 4, textAlign: 'center' }}>
-              <img src={logo} alt="PNB Logo" style={{ height: 48, objectFit: 'contain' }} />
-              <Typography sx={{ color: '#595959', fontSize: '9px', fontWeight: 600, mt: 0.5 }}>
-                UPI ID : 9952785870m@pnb
-              </Typography>
+              <img src={logo} alt="PNB Logo" style={{ height: 48 }} />
+              <Typography sx={{ color: '#595959', fontSize: '9px', fontWeight: 600 }}>UPI ID : 9952785870m@pnb</Typography>
             </Box>
 
-            {/* User Info Row */}
+            {/* Merchant Name */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3.5 }}>
               <Box sx={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#d9d9d9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <User size={20} color="#fff" />
               </Box>
-              <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600, textTransform: 'uppercase' }}>
-                MYMUBI FOOD COURT
-              </Typography>
+              <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600 }}>MYMUBI FOOD COURT</Typography>
             </Box>
 
-            {/* QR Code Placeholder */}
-            <Box sx={{
-              width: '260px',
-              height: '260px',
-              mb: 3,
-              p: 1,
-              backgroundColor: '#fff',
-              backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg)',
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
-            }} />
+            {/* The QR Code image */}
+            <Box sx={{ width: '260px', height: '260px', mb: 3, backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg)', backgroundSize: 'contain' }} />
 
-            {/* UPI ID Again */}
-            <Typography sx={{ color: '#1a1a1a', fontSize: '13px', fontWeight: 500, mb: 5 }}>
-              UPI ID : 9952785870m@pnb
-            </Typography>
-
-            {/* Download Button: Lets the merchant download or print the QR to stick it at their counter */}
-            <Button
-              variant="contained"
-              onClick={handleDownload}
-              sx={{
-                backgroundColor: COLORS.PRIMARY,
-                color: '#fff',
-                textTransform: 'none',
-                px: 4,
-                py: 1,
-                fontSize: '11px',
-                fontWeight: 600,
-                borderRadius: '4px',
-                boxShadow: 'none',
-                mb: 6,
-                '&:hover': {
-                  backgroundColor: COLORS.PRIMARY,
-                  opacity: 0.9,
-                  boxShadow: 'none'
-                }
-              }}
-            >
+            <Button variant="contained" onClick={handleDownload} sx={{ backgroundColor: COLORS.PRIMARY, mb: 6 }}>
               Download QR Code
             </Button>
-
-            {/* POWERED BY UPI Branding */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Typography sx={{ fontSize: '10px', color: '#8c8c8c', fontWeight: 700, mb: 0.5, letterSpacing: '0.5px' }}>
-                POWERED BY
-              </Typography>
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg"
-                alt="UPI Logo"
-                style={{ height: 32, objectFit: 'contain' }}
-              />
+            
+            {/* Payment brandings */}
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography sx={{ fontSize: '10px', color: '#8c8c8c', fontWeight: 700 }}>POWERED BY</Typography>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" style={{ height: 32 }} />
             </Box>
           </Box>
         ) : (
-          /* Dynamic QR Flow */
+          /* Dynamic QR Ticket View */
           isGenerated && (
-            <Box sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              animation: 'fadeIn 0.4s ease-out',
-              width: '100%',
-              maxWidth: '380px',
-              border: '1px solid #f0f0f0',
-              p: 4,
-              pb: 6
-            }}>
-              {/* Dynamic Amount Header */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff', width: '380px', border: '1px solid #f0f0f0', p: 4, pb: 6 }}>
+              {/* Show the specific amount requested by the merchant */}
               <Box sx={{ textAlign: 'center', mb: 5 }}>
-                <Typography sx={{ fontSize: '15px', color: '#595959', fontWeight: 500, mb: 0.5 }}>
-                  Amount to be Collected
-                </Typography>
-                <Typography sx={{ fontSize: '26px', color: COLORS.PRIMARY, fontWeight: 700 }}>
-                  ₹ {amount}
-                </Typography>
+                <Typography sx={{ fontSize: '15px', color: '#595959' }}>Amount to be Collected</Typography>
+                <Typography sx={{ fontSize: '26px', color: COLORS.PRIMARY, fontWeight: 700 }}>₹ {amount}</Typography>
               </Box>
 
-              {/* User Info Row */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3.5 }}>
-                <Box sx={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#d9d9d9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <User size={20} color="#fff" />
-                </Box>
-                <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600, textTransform: 'uppercase' }}>
-                  MYMUBI FOOD COURT
-                </Typography>
+                <Box sx={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#d9d9d9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={20} color="#fff" /></Box>
+                <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600 }}>MYMUBI FOOD COURT</Typography>
               </Box>
 
-              {/* QR Code Placeholder */}
-              <Box sx={{
-                width: '260px',
-                height: '260px',
-                mb: 3,
-                p: 1,
-                backgroundColor: '#fff',
-                backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg)',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-              }} />
+              {/* The QR code for this specific amount */}
+              <Box sx={{ width: '260px', height: '260px', mb: 3, backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg)', backgroundSize: 'contain' }} />
 
-              {/* UPI ID */}
-              <Typography sx={{ color: '#1a1a1a', fontSize: '13px', fontWeight: 500, mb: 5 }}>
-                UPI ID : 9952785870m@pnb
-              </Typography>
-
-              {/* Footer Section */}
               <Box sx={{ textAlign: 'center' }}>
+                {/* Real-time countdown clock */}
                 <Typography sx={{ color: COLORS.PRIMARY, fontSize: '15px', fontWeight: 600, mb: 3 }}>
                   Expires in {formatTime(timeLeft)}
                 </Typography>
-
-                <Button
-                  variant="contained"
-                  onClick={handleDownload}
-                  sx={{
-                    backgroundColor: COLORS.PRIMARY,
-                    color: '#fff',
-                    textTransform: 'none',
-                    px: 4,
-                    py: 1,
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    borderRadius: '4px',
-                    boxShadow: 'none',
-                    mb: 4,
-                    '&:hover': {
-                      backgroundColor: COLORS.PRIMARY,
-                      opacity: 0.9,
-                      boxShadow: 'none'
-                    }
-                  }}
-                >
+                <Button variant="contained" onClick={handleDownload} sx={{ backgroundColor: COLORS.PRIMARY, mb: 4 }}>
                   Download QR Code
                 </Button>
-
-                {/* POWERED BY UPI Branding */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Typography sx={{ fontSize: '10px', color: '#8c8c8c', fontWeight: 700, mb: 0.5, letterSpacing: '0.5px' }}>
-                    POWERED BY
-                  </Typography>
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg"
-                    alt="UPI Logo"
-                    style={{ height: 32, objectFit: 'contain' }}
-                  />
-                </Box>
               </Box>
             </Box>
           )
         )}
       </Box>
-
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `}
-      </style>
     </Box>
   );
 }

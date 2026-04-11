@@ -7,33 +7,33 @@ import { decryptRequest, encryptResponse } from '../../utils/crypto';
 import { ENCRYPTION_KEY, FETCH_USER_BY_ID, PASS_KEY, FETCH_REPORT } from '../../config/config';
 import { store } from '../../utils/store';
 
-/**
- * The Dashboard page provides a high-level overview of merchant high-level performance metrics,
- * including total transaction counts and total amounts collected.
- */
+// This is the main Dashboard page where the merchant sees their transactions
 export default function Dashboard() {
-  // UI state for managing menus and selections
+  
+  // These states help us manage the VPA selection menu (the dropdown top left)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
-  const [selectedVpaIndex, setSelectedVpaIndex] = useState<number | null>(null); // Which VPA is currently active
-  const [vpaOptions, setVpaOptions] = useState<string[]>([]); // List of available VPAs
-  const [showVpaModal, setShowVpaModal] = useState(false); // Controls the initial VPA selection popup
-  const [tempSelectedVpaIndex, setTempSelectedVpaIndex] = useState(0);
-  const [fullVpaData, setFullVpaData] = useState<any[]>([]);
+  const [selectedVpaIndex, setSelectedVpaIndex] = useState<number | null>(null); // Which VPA is active
+  const [vpaOptions, setVpaOptions] = useState<string[]>([]); // The list of VPA IDs
+  const [showVpaModal, setShowVpaModal] = useState(false); // Should we show the 'Select VPA' popup?
+  const [tempSelectedVpaIndex, setTempSelectedVpaIndex] = useState(0); // Temporary selection in the popup
+  const [fullVpaData, setFullVpaData] = useState<any[]>([]); // The full data of all VPAs
 
-  // State for the time filter (Today vs Yesterday)
+  // These states handle the time filter (Choosing 'Today' or 'Yesterday')
   const [timeAnchorEl, setTimeAnchorEl] = useState<null | HTMLElement>(null);
   const isTimeMenuOpen = Boolean(timeAnchorEl);
   const [selectedTime, setSelectedTime] = useState('Today');
 
-  // State for the summary statistics displayed in cards
+  // This stores the numbers we show in the white cards (Count and Amount)
   const [stats, setStats] = useState({
     totalTransactions: 0,
     totalAmount: 0
   });
 
-  const auth = useAuth(); // Handlers for authentication and user tokens
+  // This is used for login and security
+  const auth = useAuth();
 
+  // This function closes the VPA dropdown menu
   const handleMenuClose = (index?: number) => {
     setAnchorEl(null);
     if (index !== undefined) {
@@ -41,6 +41,7 @@ export default function Dashboard() {
     }
   };
 
+  // This function closes the Time filter menu
   const handleTimeMenuClose = (time?: string) => {
     setTimeAnchorEl(null);
     if (time) {
@@ -48,9 +49,7 @@ export default function Dashboard() {
     }
   };
 
-  /**
-   * Fetches transaction summaries from the API based on the selected VPA and time range.
-   */
+  // This function asks the server for the transaction numbers (how many and how much)
   const fetchDashboardStats = async () => {
     try {
       if (selectedVpaIndex === null) return;
@@ -61,6 +60,7 @@ export default function Dashboard() {
       let startDateStr = '';
       let endDateStr = '';
 
+      // Helper to turn a Date object into a string like "11/04/2026"
       const formatApiDate = (date: Date) => {
         const d = date.getDate().toString().padStart(2, '0');
         const m = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -68,6 +68,7 @@ export default function Dashboard() {
         return `${d}/${m}/${y}`;
       };
 
+      // Decide which dates to use based on 'Today' or 'Yesterday'
       if (selectedTime === 'Today') {
         startDateStr = formatApiDate(today);
         endDateStr = formatApiDate(today);
@@ -85,6 +86,7 @@ export default function Dashboard() {
         "mode": "both"
       }
 
+      // We send the request to the server
       const response = await fetch(FETCH_REPORT, {
         method: 'POST',
         headers: {
@@ -96,6 +98,7 @@ export default function Dashboard() {
       });
 
       const jsonResponse = await response.json();
+      // If we got data, we calculate the totals
       if (jsonResponse.data && Array.isArray(jsonResponse.data)) {
         const totalCount = jsonResponse.data.length;
         const totalAmt = jsonResponse.data.reduce((acc: number, curr: any) => {
@@ -107,27 +110,18 @@ export default function Dashboard() {
           totalAmount: totalAmt
         });
       } else {
-        setStats({ totalTransactions: 0, totalAmount: 0 });
+        setStats({ totalTransactions: 0, totalAmount: 0 }); // Reset if no data
       }
     } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
+      console.error("Problem getting dashboard numbers:", error);
     }
   };
 
-  /**
-   * getvpaid is a critical function that identifies which VPA IDs belong to the merchant's mobile number.
-   * 
-   * Steps:
-   * 1. Pack the mobile number into a 'RequestData' object.
-   * 2. Encrypt this object so the data remains secure while traveling over the internet.
-   * 3. Send the encrypted package to the PNB server.
-   * 4. Once the server replies, decrypt the response to get the actual VPA list.
-   * 5. Save the details (like name and serial number) in the 'store' for other pages to use.
-   */
+  // This function gets the list of VPAs that belong to this merchant
   const getvpaid = async () => {
     try {
       const rawPayload = { mobile_number: auth.user?.profile?.user_name };
-      // Security: We encrypt the request so only PNB's server can read the mobile number.
+      // Encrypting for security
       const encryptedData = encryptResponse(JSON.stringify(rawPayload), ENCRYPTION_KEY);
 
       const response = await fetch(FETCH_USER_BY_ID, {
@@ -143,29 +137,28 @@ export default function Dashboard() {
       const jsonResponse = await response.json();
 
       if (jsonResponse.ResponseData) {
-        // More Security: The server sends an encrypted reply. we must decrypt it first.
+        // Decrypt the reply from the server
         const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
         const parsedData = JSON.parse(decryptedData);
 
         if (parsedData.data && parsedData.data.length > 0) {
           setFullVpaData(parsedData.data);
-
           const fetchedVpas = parsedData.data.map((item: any) => item.vpa_id).filter(Boolean);
+          
           if (fetchedVpas.length > 0) {
             setVpaOptions(fetchedVpas);
 
-            // Check if we have a saved VPA in the store to restore on refresh
+            // Check if we already picked a VPA before (like before refreshing the page)
             const savedUser = store.getUserDetails();
             if (savedUser && savedUser.vpa_id) {
               const idx = fetchedVpas.indexOf(savedUser.vpa_id);
               if (idx !== -1) {
-                setSelectedVpaIndex(idx);
-                // Already restored selected VPA, so we don't show modal
+                setSelectedVpaIndex(idx); // Use the saved one
                 return;
               }
             }
 
-            // If it's the first time visiting and no VPA is saved, show the selection modal
+            // If no VPA is picked yet, show the 'Select VPA' popup
             if (!store.isVpaModalShown()) {
               setShowVpaModal(true);
               store.setVpaModalShown(true);
@@ -174,18 +167,18 @@ export default function Dashboard() {
         }
       }
     } catch (error) {
-      console.error("Error fetching VPA ID:", error);
+      console.error("Problem getting VPA list:", error);
     }
   };
 
-  // Fetch VPA list once the user is authenticated
+  // Run this when the page first loads and the user is logged in
   useEffect(() => {
     if (auth.isAuthenticated) {
       getvpaid();
     }
   }, [auth.isAuthenticated]);
 
-  // Sync the global store whenever a different VPA is selected
+  // Save the selected VPA to the permanent store so other pages can see it
   useEffect(() => {
     if (selectedVpaIndex !== null && fullVpaData.length > 0) {
       store.setUserDetails(fullVpaData[selectedVpaIndex]);
@@ -193,7 +186,7 @@ export default function Dashboard() {
     }
   }, [selectedVpaIndex, fullVpaData]);
 
-  // Re-fetch statistics whenever filters (VPA or Time) change
+  // Whenever the VPA or Time changes, we must refresh the numbers
   useEffect(() => {
     if (vpaOptions.length > 0 && selectedVpaIndex !== null) {
       fetchDashboardStats();
@@ -202,7 +195,8 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ width: '100%', minHeight: '100vh', backgroundColor: '#f8f9fa', pt: '2px', px: '24px', boxSizing: 'border-box' }}>
-      {/* Header section with Title and Filters */}
+      
+      {/* Top section with the 'Dashboard' title and filters */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 1.5 }}>
         <Box>
           <Typography sx={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.25rem', mb: 3.5 }}>Dashboard</Typography>
@@ -211,16 +205,9 @@ export default function Dashboard() {
             <Box
               onClick={(e) => setAnchorEl(e.currentTarget)}
               sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 1.5,
-                border: '1px solid #d9d9d9',
-                borderRadius: '3px',
-                padding: '4px 12px',
-                cursor: 'pointer',
-                backgroundColor: '#fff',
-                transition: 'all 0.2s',
-                '&:hover': { backgroundColor: '#f9f9f9', borderColor: '#ccc' }
+                display: 'inline-flex', alignItems: 'center', gap: 1.5,
+                border: '1px solid #d9d9d9', borderRadius: '3px', padding: '4px 12px',
+                cursor: 'pointer', backgroundColor: '#fff'
               }}
             >
               <Typography sx={{ color: '#333', fontSize: '0.9rem', fontWeight: 500 }}>
@@ -231,22 +218,13 @@ export default function Dashboard() {
           </Box>
         </Box>
 
+        {/* The 'Today/Yesterday' selector */}
         <Box
           onClick={(e) => setTimeAnchorEl(e.currentTarget)}
           sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-            border: '1px solid #e0e0e0',
-            borderRadius: '2px',
-            backgroundColor: '#fff',
-            px: 1.5,
-            py: 0.5,
-            cursor: 'pointer',
-            height: '32px',
-            mb: '2px',
-            transition: 'all 0.2s',
-            '&:hover': { borderColor: '#ccc' }
+            display: 'flex', alignItems: 'center', gap: 1,
+            border: '1px solid #e0e0e0', borderRadius: '2px', backgroundColor: '#fff',
+            px: 1.5, py: 0.5, cursor: 'pointer', height: '32px', mb: '2px'
           }}
         >
           <Typography sx={{ fontSize: '0.85rem', color: '#444' }}>{selectedTime}</Typography>
@@ -254,13 +232,15 @@ export default function Dashboard() {
         </Box>
       </Box>
 
+      {/* The two big summary cards */}
       <Grid container spacing={2}>
+        {/* Card for Total Transactions */}
         <Grid size={{ xs: 12, md: 6 }}>
           <Card
             elevation={0}
             sx={{
               width: '540px', maxWidth: '100%', height: '84px', borderRadius: '12px', border: '1px solid #f0f0f0',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', px: 3, py: 1, boxSizing: 'border-box'
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', px: 3, py: 1
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -275,12 +255,13 @@ export default function Dashboard() {
           </Card>
         </Grid>
 
+        {/* Card for Total Amount */}
         <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Card
             elevation={0}
             sx={{
               width: '540px', maxWidth: '100%', height: '84px', borderRadius: '12px', border: '1px solid #f0f0f0',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', px: 3, py: 1, boxSizing: 'border-box'
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', px: 3, py: 1
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -300,6 +281,7 @@ export default function Dashboard() {
         </Grid>
       </Grid>
 
+      {/* The VPA selection dropdown items */}
       <Menu
         anchorEl={anchorEl}
         open={isMenuOpen}
@@ -317,13 +299,12 @@ export default function Dashboard() {
         ))}
       </Menu>
 
+      {/* The Time picker (Today/Yesterday) dropdown items */}
       <Menu
         anchorEl={timeAnchorEl}
         open={isTimeMenuOpen}
         onClose={() => handleTimeMenuClose()}
-        PaperProps={{
-          elevation: 0, sx: { mt: 1.5, minWidth: 140, borderRadius: '4px', boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)', border: '1px solid #f0f0f0' }
-        }}
+        PaperProps={{ elevation: 0, sx: { mt: 1.5, minWidth: 140, borderRadius: '4px', boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.08)', border: '1px solid #f0f0f0' } }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
@@ -331,7 +312,7 @@ export default function Dashboard() {
           <MenuItem
             key={option}
             onClick={() => handleTimeMenuClose(option)}
-            sx={{ py: 0.5, px: 1.5, fontSize: '0.9rem', color: '#333', backgroundColor: selectedTime === option ? '#eaf5fd' : 'transparent', '&:hover': { backgroundColor: selectedTime === option ? '#eaf5fd' : '#f5f5f5' } }}
+            sx={{ py: 0.5, px: 1.5, fontSize: '0.9rem', color: '#333', backgroundColor: selectedTime === option ? '#eaf5fd' : 'transparent' }}
           >
             <Radio checked={selectedTime === option} size="small" sx={{ p: 0.5, mr: 1, color: '#444', '&.Mui-checked': { color: COLORS.PRIMARY } }} />
             {option}
@@ -339,21 +320,22 @@ export default function Dashboard() {
         ))}
       </Menu>
 
+      {/* This is the popup that appears when you first login to pick a VPA */}
       <Dialog open={showVpaModal && vpaOptions.length > 0} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: '4px', p: 1 } }}>
         <DialogTitle sx={{ pb: 1 }}><Typography variant="h6" sx={{ fontWeight: 700, color: '#262626' }}>Select VPA</Typography></DialogTitle>
         <DialogContent sx={{ py: 2 }}>
           <Typography variant="body2" sx={{ color: '#595959', mb: 2, fontWeight: 500 }}>Select a VPA to Proceed</Typography>
           <RadioGroup value={tempSelectedVpaIndex} onChange={(e) => setTempSelectedVpaIndex(parseInt(e.target.value))}>
             {vpaOptions.map((vpa, index) => (
-              <Box key={index} sx={{ border: '1px solid #f0f0f0', borderRadius: '4px', mb: 1.5, p: 1.5, display: 'flex', alignItems: 'center', transition: 'all 0.2s', '&:hover': { backgroundColor: '#fafafa' } }}>
+              <Box key={index} sx={{ border: '1px solid #f0f0f0', borderRadius: '4px', mb: 1.5, p: 1.5, display: 'flex', alignItems: 'center' }}>
                 <FormControlLabel value={index} control={<Radio sx={{ color: '#d9d9d9', '&.Mui-checked': { color: COLORS.PRIMARY } }} />} label={<Typography sx={{ color: '#262626', fontSize: '0.95rem', fontWeight: 500, ml: 1 }}>{vpa}</Typography>} sx={{ width: '100%', m: 0 }} />
               </Box>
             ))}
           </RadioGroup>
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button onClick={() => setShowVpaModal(false)} sx={{ color: '#ff4d4f', textTransform: 'none', fontSize: '0.95rem', fontWeight: 500, '&:hover': { backgroundColor: 'transparent' } }}>Cancel</Button>
-          <Button variant="contained" disableElevation onClick={() => { setSelectedVpaIndex(tempSelectedVpaIndex); setShowVpaModal(false); }} sx={{ backgroundColor: COLORS.PRIMARY, color: '#fff', textTransform: 'none', px: 4, py: 1, fontSize: '0.95rem', fontWeight: 500, borderRadius: '6px', '&:hover': { backgroundColor: '#8B1434' } }}>Proceed</Button>
+          <Button onClick={() => setShowVpaModal(false)} sx={{ color: '#ff4d4f', textTransform: 'none', fontSize: '0.95rem', fontWeight: 500 }}>Cancel</Button>
+          <Button variant="contained" disableElevation onClick={() => { setSelectedVpaIndex(tempSelectedVpaIndex); setShowVpaModal(false); }} sx={{ backgroundColor: COLORS.PRIMARY, color: '#fff', textTransform: 'none', px: 4, py: 1, borderRadius: '6px' }}>Proceed</Button>
         </DialogActions>
       </Dialog>
     </Box>
