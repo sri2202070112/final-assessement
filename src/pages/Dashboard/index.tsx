@@ -154,7 +154,18 @@ export default function Dashboard() {
           if (fetchedVpas.length > 0) {
             setVpaOptions(fetchedVpas);
 
-            // If it's the first time visiting, show the VPA selection popup or 'modal'
+            // Check if we have a saved VPA in the store to restore on refresh
+            const savedUser = store.getUserDetails();
+            if (savedUser && savedUser.vpa_id) {
+              const idx = fetchedVpas.indexOf(savedUser.vpa_id);
+              if (idx !== -1) {
+                setSelectedVpaIndex(idx);
+                // Already restored selected VPA, so we don't show modal
+                return;
+              }
+            }
+
+            // If it's the first time visiting and no VPA is saved, show the selection modal
             if (!store.isVpaModalShown()) {
               setShowVpaModal(true);
               store.setVpaModalShown(true);
@@ -190,7 +201,7 @@ export default function Dashboard() {
   }, [vpaOptions, selectedVpaIndex, selectedTime]);
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', backgroundColor: '#f8f9fa', pt: '2px', px: '32px', boxSizing: 'border-box' }}>
+    <Box sx={{ width: '100%', minHeight: '100vh', backgroundColor: '#f8f9fa', pt: '2px', px: '24px', boxSizing: 'border-box' }}>
       {/* Header section with Title and Filters */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 1.5 }}>
         <Box>
@@ -243,47 +254,46 @@ export default function Dashboard() {
         </Box>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
           <Card
             elevation={0}
             sx={{
-              width: '552px', maxWidth: '100%', height: '100px', borderRadius: '12px', border: '1px solid #f0f0f0',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', p: 3, boxSizing: 'border-box'
+              width: '540px', maxWidth: '100%', height: '84px', borderRadius: '12px', border: '1px solid #f0f0f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', px: 3, py: 1, boxSizing: 'border-box'
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ width: 44, height: 44, borderRadius: '10px', backgroundColor: '#f0f5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 2 }}>
+              <Box sx={{ width: 40, height: 40, borderRadius: '10px', backgroundColor: '#f0f5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 2 }}>
                 <ArrowLeftRight size={18} color="#9E173B" />
               </Box>
-              <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>Total No Of Transaction</Typography>
+              <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.9rem' }}>Total No Of Transaction</Typography>
             </Box>
-            {/* Displaying the count. .toLocaleString() adds commas for thousands (e.g., 1,234) */}
-            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.75rem' }}>
+            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.6rem' }}>
               {stats.totalTransactions.toLocaleString()}
             </Typography>
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Card
             elevation={0}
             sx={{
-              width: '552px', maxWidth: '100%', height: '100px', borderRadius: '12px', border: '1px solid #f0f0f0',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', p: 3, boxSizing: 'border-box'
+              width: '540px', maxWidth: '100%', height: '84px', borderRadius: '12px', border: '1px solid #f0f0f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#fff', px: 3, py: 1, boxSizing: 'border-box'
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ width: 44, height: 44, borderRadius: '10px', backgroundColor: '#f0f5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 2 }}>
+              <Box sx={{ width: 40, height: 40, borderRadius: '10px', backgroundColor: '#f0f5ff', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 2 }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="2" y="5" width="20" height="14" rx="3" stroke="#9E173B" strokeWidth="2" strokeLinejoin="round" />
                   <circle cx="12" cy="12" r="3" stroke="#9E173B" strokeWidth="2" />
                   <path d="M 6 5 C 6 7.209 4.209 9 2 9 M 18 5 C 18 7.209 19.791 9 22 9 M 6 19 C 6 16.791 4.209 15 2 15 M 18 19 C 18 16.791 19.791 15 22 15" stroke="#9E173B" strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </Box>
-              <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.95rem' }}>Total Amount</Typography>
+              <Typography sx={{ color: '#444', fontWeight: 500, fontSize: '0.9rem' }}>Total Amount</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.75rem' }}>
+            <Typography sx={{ fontWeight: 500, color: '#1a1a1a', fontSize: '1.6rem' }}>
               {stats.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Typography>
           </Card>

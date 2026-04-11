@@ -6,7 +6,7 @@ import { COLORS } from '../../theme/color';
 import ViewProfileModal from '../../components/UI/ViewProfileModal';
 import { store } from '../../utils/store';
 
-const drawerWidth = 260;
+const drawerWidth = 240;
 
 interface HeaderProps {
   open: boolean;
@@ -95,9 +95,9 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
         >
           <Avatar
             src="https://mui.com/static/images/avatar/1.jpg"
-            sx={{ width: 34, height: 34, border: '1px solid #f0f0f0' }}
+            sx={{ width: 32, height: 32, border: '1px solid #f0f0f0' }}
           />
-          <Typography variant="body2" sx={{ fontWeight: 500, color: '#333' }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, color: '#333', fontSize: '0.85rem' }}>
             {/* Display the merchant name fetched from the session store */}
             {userDetails?.beneficiary_name || userDetails?.merchant_name || 'Merchant'}
           </Typography>

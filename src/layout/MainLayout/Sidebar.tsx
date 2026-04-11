@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { COLORS } from '../../theme/color';
 
-const drawerWidth = 260;
+const drawerWidth = 240;
 
 interface SidebarProps {
   open: boolean;
@@ -124,17 +124,17 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                   }
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 32, color: isSelected ? '#fff' : '#333' }}>
-                  <Icon style={{ fontSize: '1.2rem' }} />
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.title}
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                    fontWeight: isSelected ? 500 : 400,
-                    color: isSelected ? '#fff' : '#262626'
-                  }}
-                />
+                <ListItemIcon sx={{ minWidth: 28, color: isSelected ? '#fff' : '#333' }}>
+                   <Icon style={{ fontSize: '1.1rem' }} />
+                 </ListItemIcon>
+                 <ListItemText
+                   primary={item.title}
+                   primaryTypographyProps={{
+                     fontSize: '0.85rem',
+                     fontWeight: isSelected ? 500 : 400,
+                     color: isSelected ? '#fff' : '#262626'
+                   }}
+                 />
               </ListItemButton>
             </ListItem>
           );
@@ -219,7 +219,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                     minHeight: 48,
                     justifyContent: open ? 'initial' : 'center',
                     px: 2.5,
-                    py: 1.5,
+                    py: 1.2,
                     position: 'relative',
                     '&.Mui-selected': {
                       backgroundColor: COLORS.PRIMARY,
@@ -250,12 +250,12 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                   <ListItemIcon
                     sx={{
                       minWidth: 0,
-                      mr: open ? 2 : 'auto',
+                      mr: open ? 1.5 : 'auto',
                       justifyContent: 'center',
                       color: isSelected ? '#fff' : '#333'
                     }}
                   >
-                    <Icon style={{ fontSize: item.id === 'qr-details' ? '1.4rem' : '1.2rem' }} />
+                    <Icon style={{ fontSize: item.id === 'qr-details' ? '1.2rem' : '1.1rem' }} />
                   </ListItemIcon>
                   <ListItemText
                     primary={item.title}
@@ -264,8 +264,8 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
                       display: open ? 'block' : 'none'
                     }}
                     primaryTypographyProps={{
-                      fontSize: '0.875rem',
-                      variant: 'body2'
+                      fontSize: '0.8rem',
+                      fontWeight: isSelected ? 500 : 400,
                     }}
                   />
                 </ListItemButton>
