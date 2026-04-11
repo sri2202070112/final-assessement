@@ -118,34 +118,35 @@ export default function QrDetails() {
   return (
     <Box sx={{
       width: '100%',
-      height: '100%',
-      backgroundColor: '#f8f9fa', // Grey original page background
+      minHeight: '100vh',
+      backgroundColor: '#f8f9fa',
       display: 'flex',
       flexDirection: 'column',
-      p: '16px 24px',
+      pt: '2px',
+      px: '24px',
       boxSizing: 'border-box',
       overflow: 'auto'
     }}>
-      <Typography sx={{ fontWeight: 700, color: '#1a1a1a', mb: 2, fontSize: '1.2rem' }}>
+      <Typography sx={{ fontWeight: 700, color: '#1a1a1a', mb: 3.5, fontSize: '1.25rem' }}>
         QR Details
       </Typography>
 
       {/* Filter Section - White Paper on Grey BG */}
       <Paper elevation={0} sx={{
-        p: 2.5,
-        mb: 2,
-        borderRadius: '4px',
+        p: '20px 24px',
+        mb: 2.5,
+        borderRadius: '8px',
         border: '1px solid #f0f0f0',
         backgroundColor: '#fff'
       }}>
-        <Typography variant="caption" sx={{ color: '#595959', mb: 0.5, fontWeight: 600, display: 'block', ml: 1.5 }}>
+        <Typography variant="caption" sx={{ color: '#8c8c8c', mb: 1.25, fontWeight: 600, display: 'block', fontSize: '0.85rem' }}>
           Select The Type of QR
         </Typography>
         <RadioGroup
           row
           value={qrType}
           onChange={(e) => setQrType(e.target.value)}
-          sx={{ ml: 1.5, mb: qrType === 'dynamic' ? 2 : 0 }}
+          sx={{ mb: qrType === 'dynamic' ? 2 : 0 }}
         >
           <FormControlLabel
             value="static"

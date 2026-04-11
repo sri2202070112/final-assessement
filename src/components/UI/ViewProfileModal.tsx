@@ -41,11 +41,11 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
   };
 
   const InfoRow = ({ label, value }: { label: string; value: string }) => (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.8, '&:last-child': { mb: 0 } }}>
-      <Typography variant="body2" sx={{ color: '#9da5b1', flex: 1, fontSize: '0.75rem' }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.2, '&:last-child': { mb: 0 } }}>
+      <Typography variant="body2" sx={{ color: '#9da5b1', flex: 1.5, fontSize: '0.75rem' }}>
         {label}
       </Typography>
-      <Typography variant="body2" sx={{ color: '#333', fontWeight: 500, flex: 1.2, fontSize: '0.75rem' }}>
+      <Typography variant="body2" sx={{ color: '#333', fontWeight: 500, flex: 2, fontSize: '0.75rem', textAlign: 'right' }}>
         {value}
       </Typography>
     </Box>
@@ -58,11 +58,11 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
       scroll="paper"
       PaperProps={{
         sx: {
-          width: '400px',
-          maxHeight: '90vh',
+          width: '320px',
+          maxHeight: '92vh',
           position: 'fixed',
-          top: '53%',
-          left: '53.5%',
+          top: '50%',
+          left: '50%',
           transform: 'translate(-50%, -50%)',
           borderRadius: '4px',
           backgroundColor: '#FFFFFF',
@@ -94,7 +94,6 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
           sx={{
             border: '1px solid #f0f0f0',
             borderRadius: '4px',
-            overflow: 'hidden',
             backgroundColor: '#fff'
           }}
         >
@@ -103,7 +102,7 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
               Basic Information
             </Typography>
           </Box>
-          <Box sx={{ p: 1.5 }}>
+          <Box sx={{ p: '12px 16px 20px 16px' }}>
             {profileData.basic.map((item) => (
               <InfoRow key={item.label} label={item.label} value={item.value} />
             ))}
@@ -115,7 +114,6 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
           sx={{
             border: '1px solid #f0f0f0',
             borderRadius: '4px',
-            overflow: 'hidden',
             backgroundColor: '#fff'
           }}
         >
@@ -124,7 +122,7 @@ export default function ViewProfileModal({ open, onClose }: ViewProfileModalProp
               Device Information
             </Typography>
           </Box>
-          <Box sx={{ p: 1.5 }}>
+          <Box sx={{ p: '12px 16px 20px 16px' }}>
             {profileData.device.map((item) => (
               <InfoRow key={item.label} label={item.label} value={item.value} />
             ))}

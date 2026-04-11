@@ -335,28 +335,91 @@ export default function LanguageUpdate() {
         </Grid>
       </Paper>
 
+
       <Dialog
         open={openSuccess}
         onClose={handleClose}
-        PaperProps={{ sx: { borderRadius: '2px', maxWidth: '300px', width: 'calc(100% - 32px)', m: 2 } }}
+        slotProps={{
+          backdrop: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.2)',
+              backdropFilter: 'blur(4px)',
+            },
+          },
+        }}
+        PaperProps={{
+          sx: {
+            borderRadius: '2px',
+            maxWidth: '420px',
+            width: '100%',
+            m: 2,
+            boxShadow: '0px 12px 32px rgba(0, 0, 0, 0.12)'
+          }
+        }}
       >
-        <DialogContent sx={{ p: '24px 20px', textAlign: 'center' }}>
-          <Typography sx={{ fontWeight: 500, color: '#262626', mb: 0.5, fontSize: '1.2rem' }}>Language update request</Typography>
-          <Typography sx={{ fontWeight: 500, color: isSuccess ? '#52c41a' : '#f5222d', mb: 3, fontSize: '1rem', lineHeight: 1.4 }}>{apiMessage}</Typography>
+        <DialogContent sx={{ p: '24px 32px', textAlign: 'center' }}>
+          <Typography sx={{ fontWeight: 500, color: '#333', fontSize: '1.15rem', mb: 0.5 }}>
+            Language update request
+          </Typography>
+          <Typography sx={{ fontWeight: 700, color: '#333', fontSize: '1.15rem', mb: 4 }}>
+            Initiated Successfully
+          </Typography>
 
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-            <Box sx={{ width: 100, height: 100, borderRadius: '50%', backgroundColor: isSuccess ? '#d9f7be' : '#fff1f0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Box sx={{ width: 75, height: 75, borderRadius: '50%', backgroundColor: isSuccess ? '#52c41a' : '#ff4d4f', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                {isSuccess ? <CheckCircle color="#fff" size={45} strokeWidth={3} /> : <XCircle color="#fff" size={45} strokeWidth={3} />}
+            <Box sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '50%',
+              backgroundColor: isSuccess ? '#e6f9ed' : '#fff1f0',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              border: `1px solid ${isSuccess ? '#c7f1d6' : '#ffa39e'}`
+            }}>
+              <Box sx={{
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                backgroundColor: isSuccess ? '#34c759' : '#ff4d4f',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                {isSuccess ? <CheckCircle color="#fff" size={32} strokeWidth={3} /> : <XCircle color="#fff" size={32} strokeWidth={3} />}
               </Box>
             </Box>
           </Box>
 
-          <Box sx={{ pt: 2, borderTop: '1px solid #f0f0f0', mt: 1 }}>
-            <Button fullWidth variant="contained" disableElevation onClick={handleClose} sx={{ backgroundColor: COLORS.PRIMARY, color: '#fff', textTransform: 'none', py: 1.2, fontSize: '0.95rem', fontWeight: 500, borderRadius: '4px', '&:hover': { backgroundColor: '#8B1434' } }}>Close</Button>
-          </Box>
+          <Button
+            fullWidth
+            variant="contained"
+            disableElevation
+            onClick={handleClose}
+            sx={{
+              backgroundColor: COLORS.PRIMARY,
+              color: '#fff',
+              textTransform: 'none',
+              height: '40px',
+              fontSize: '0.9rem',
+              fontWeight: 500,
+              borderRadius: '2px',
+              mt: 1,
+              '&:hover': { backgroundColor: '#8B1434' }
+            }}
+          >
+            Close
+          </Button>
         </DialogContent>
       </Dialog>
+
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
     </Box>
   );
 }

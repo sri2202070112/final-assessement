@@ -40,6 +40,18 @@ const QRIcon = (props: any) => (
  */
 const menuItems = [
   {
+    id: 'language',
+    title: 'Language Update',
+    url: '/language',
+    icon: TranslationOutlined
+  },
+  {
+    id: 'qr-details',
+    title: 'QR Details',
+    url: '/qr-details',
+    icon: QRIcon
+  },
+  {
     id: 'dashboard',
     title: 'Dashboard',
     url: '/dashboard',
@@ -50,18 +62,6 @@ const menuItems = [
     title: 'Transaction Reports',
     url: '/transactions',
     icon: FileTextOutlined
-  },
-  {
-    id: 'qr-details',
-    title: 'QR Details',
-    url: '/qr-details',
-    icon: QRIcon
-  },
-  {
-    id: 'language',
-    title: 'Language Update',
-    url: '/language',
-    icon: TranslationOutlined
   },
   {
     id: 'help',
@@ -204,7 +204,7 @@ export default function Sidebar({ open, handleDrawerToggle, window }: SidebarPro
           />
         </Box>
 
-        <List sx={{ pt: 0, px: 0 }}>
+        <List sx={{ pt: 1, px: 0 }}>
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isSelected = location.pathname === item.url || (item.url !== '/dashboard' && location.pathname.includes(item.url));
