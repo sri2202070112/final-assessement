@@ -241,11 +241,22 @@ export default function TransactionReport() {
               <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end' }}>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>Start Date</Typography>
-                  <DatePicker value={dayjs(startDate)} onChange={(newValue) => setStartDate(newValue ? newValue.format('YYYY-MM-DD') : '')} slotProps={{ textField: { size: 'small', sx: { width: 220 } } }} />
+                  <DatePicker 
+                    value={dayjs(startDate)} 
+                    onChange={(newValue) => setStartDate(newValue ? newValue.format('YYYY-MM-DD') : '')} 
+                    maxDate={dayjs(endDate)}
+                    slotProps={{ textField: { size: 'small', sx: { width: 220 } } }} 
+                  />
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: '#666', mb: 1, fontWeight: 500, display: 'block' }}>End Date</Typography>
-                  <DatePicker value={dayjs(endDate)} onChange={(newValue) => setEndDate(newValue ? newValue.format('YYYY-MM-DD') : '')} slotProps={{ textField: { size: 'small', sx: { width: 220 } } }} />
+                  <DatePicker 
+                    value={dayjs(endDate)} 
+                    onChange={(newValue) => setEndDate(newValue ? newValue.format('YYYY-MM-DD') : '')} 
+                    minDate={dayjs(startDate)}
+                    maxDate={dayjs()}
+                    slotProps={{ textField: { size: 'small', sx: { width: 220 } } }} 
+                  />
                 </Box>
                 <Button variant="contained" disableElevation onClick={() => { setPage(1); fetchReport(); }} sx={{ backgroundColor: COLORS.PRIMARY, height: 40, borderRadius: '6px' }}>Submit</Button>
               </Box>

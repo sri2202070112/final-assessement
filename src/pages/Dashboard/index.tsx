@@ -15,11 +15,11 @@ export default function Dashboard() {
   // UI state for managing menus and selections
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isMenuOpen = Boolean(anchorEl);
-  const [selectedVpaIndex, setSelectedVpaIndex] = useState(0); // Which VPA is currently active
+  const [selectedVpaIndex, setSelectedVpaIndex] = useState<number | null>(null); // Which VPA is currently active
   const [vpaOptions, setVpaOptions] = useState<string[]>([]); // List of available VPAs
   const [showVpaModal, setShowVpaModal] = useState(false); // Controls the initial VPA selection popup
   const [tempSelectedVpaIndex, setTempSelectedVpaIndex] = useState(0);
-  const [fullVpaData, setFullVpaData] = useState<any[]>([]); 
+  const [fullVpaData, setFullVpaData] = useState<any[]>([]);
 
   // State for the time filter (Today vs Yesterday)
   const [timeAnchorEl, setTimeAnchorEl] = useState<null | HTMLElement>(null);
@@ -53,6 +53,7 @@ export default function Dashboard() {
    */
   const fetchDashboardStats = async () => {
     try {
+      if (selectedVpaIndex === null) return;
       const vpa = vpaOptions[selectedVpaIndex];
       if (!vpa) return;
 
@@ -145,17 +146,14 @@ export default function Dashboard() {
         // More Security: The server sends an encrypted reply. we must decrypt it first.
         const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
         const parsedData = JSON.parse(decryptedData);
-        
+
         if (parsedData.data && parsedData.data.length > 0) {
           setFullVpaData(parsedData.data);
-          store.setUserDetails(parsedData.data[0]);
 
           const fetchedVpas = parsedData.data.map((item: any) => item.vpa_id).filter(Boolean);
           if (fetchedVpas.length > 0) {
             setVpaOptions(fetchedVpas);
-            setSelectedVpaIndex(0);
-            setTempSelectedVpaIndex(0);
-            
+
             // If it's the first time visiting, show the VPA selection popup or 'modal'
             if (!store.isVpaModalShown()) {
               setShowVpaModal(true);
@@ -178,14 +176,15 @@ export default function Dashboard() {
 
   // Sync the global store whenever a different VPA is selected
   useEffect(() => {
-    if (fullVpaData.length > 0) {
+    if (selectedVpaIndex !== null && fullVpaData.length > 0) {
       store.setUserDetails(fullVpaData[selectedVpaIndex]);
+      window.dispatchEvent(new Event('storage'));
     }
   }, [selectedVpaIndex, fullVpaData]);
 
   // Re-fetch statistics whenever filters (VPA or Time) change
   useEffect(() => {
-    if (vpaOptions.length > 0) {
+    if (vpaOptions.length > 0 && selectedVpaIndex !== null) {
       fetchDashboardStats();
     }
   }, [vpaOptions, selectedVpaIndex, selectedTime]);
@@ -214,7 +213,7 @@ export default function Dashboard() {
               }}
             >
               <Typography sx={{ color: '#333', fontSize: '0.9rem', fontWeight: 500 }}>
-                {vpaOptions[selectedVpaIndex] || 'N/A'}
+                {selectedVpaIndex !== null ? vpaOptions[selectedVpaIndex] : 'N/A'}
               </Typography>
               <ChevronDown size={14} color="#666" />
             </Box>

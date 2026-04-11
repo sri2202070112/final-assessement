@@ -1,6 +1,6 @@
 import { AppBar, Toolbar, IconButton, Typography, Box, Avatar, Menu, MenuItem } from '@mui/material';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from "react-oidc-context";
 import { COLORS } from '../../theme/color';
 import ViewProfileModal from '../../components/UI/ViewProfileModal';
@@ -19,7 +19,15 @@ interface HeaderProps {
  */
 export default function Header({ open, handleDrawerToggle }: HeaderProps) {
   const auth = useAuth();
+  const [userDetails, setUserDetails] = useState(store.getUserDetails());
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Anchor for the profile dropdown menu
+
+  // Listen for storage updates to keep merchant name in sync
+  useEffect(() => {
+    const syncUser = () => setUserDetails(store.getUserDetails());
+    window.addEventListener('storage', syncUser);
+    return () => window.removeEventListener('storage', syncUser);
+  }, []);
   const isMenuOpen = Boolean(anchorEl);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // Controls the 'View Profile' popup
 
@@ -91,7 +99,7 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
           />
           <Typography variant="body2" sx={{ fontWeight: 500, color: '#333' }}>
             {/* Display the merchant name fetched from the session store */}
-            {store.getUserDetails()?.beneficiary_name || store.getUserDetails()?.merchant_name || 'Merchant'}
+            {userDetails?.beneficiary_name || userDetails?.merchant_name || 'Merchant'}
           </Typography>
         </Box>
 
@@ -144,6 +152,7 @@ export default function Header({ open, handleDrawerToggle }: HeaderProps) {
           <MenuItem
             onClick={() => {
               handleMenuClose();
+              store.clear();
               auth.signoutRedirect();
             }}
             sx={{

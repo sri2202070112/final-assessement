@@ -12,6 +12,7 @@ const formatLanguageName = (name: string) =>
   name ? name.charAt(0).toUpperCase() + name.slice(1).toLowerCase() : '';
 
 export default function LanguageUpdate() {
+  const [userData, setUserData] = useState(store.getUserDetails());
   const [targetLanguage, setTargetLanguage] = useState('HINDI');
   const [openSuccess, setOpenSuccess] = useState(false);
   const [languages, setLanguages] = useState<string[]>([]);
@@ -19,10 +20,22 @@ export default function LanguageUpdate() {
   const [apiMessage, setApiMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(true);
 
-  // Get merchant details (like Serial Number) from the session store
-  const userData = store.getUserDetails();
+  const auth = useAuth();
 
-  const auth = useAuth()
+  // Listen for storage updates (from Dashboard) to keep VPA/Serial in sync
+  useEffect(() => {
+    const syncUser = () => setUserData(store.getUserDetails());
+    window.addEventListener('storage', syncUser);
+    return () => window.removeEventListener('storage', syncUser);
+  }, []);
+
+  // Re-fetch language info whenever the active VPA/Serial changes
+  useEffect(() => {
+    if (userData?.serial_number) {
+      fetchLanguage();
+      fetchCurrentLanguage();
+    }
+  }, [userData?.serial_number]);
 
   const handleUpdate = () => {
     updateLanguage()
@@ -131,10 +144,7 @@ export default function LanguageUpdate() {
     }
   }
 
-  useEffect(() => {
-    fetchLanguage();
-    fetchCurrentLanguage();
-  }, [])
+  // Initial fetch is handled by the useEffect watching userData.serial_number
 
   return (
     <Box sx={{ p: '8px 24px', backgroundColor: '#fafafa', minHeight: '100vh' }}>
@@ -162,7 +172,8 @@ export default function LanguageUpdate() {
               <TextField
                 fullWidth
                 size="small"
-                defaultValue={userData?.vpa_id}
+                value={userData?.vpa_id || ''}
+                slotProps={{ input: { readOnly: true } }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     height: 44,
@@ -186,7 +197,8 @@ export default function LanguageUpdate() {
               <TextField
                 fullWidth
                 size="small"
-                defaultValue={userData?.serial_number}
+                value={userData?.serial_number || ''}
+                slotProps={{ input: { readOnly: true } }}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     height: 44,
@@ -263,8 +275,8 @@ export default function LanguageUpdate() {
                       overflow: 'auto',
                       '& .MuiList-root': { py: '12px' },
                       '& .MuiMenuItem-root': {
-                        fontSize: '10px',
-                        py: '4px',
+                        fontSize: '14px',
+                        py: '8px',
                         px: '20px',
                         fontWeight: 400,
                         color: '#262626',
