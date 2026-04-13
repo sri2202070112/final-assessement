@@ -238,21 +238,7 @@ export default function QrDetails() {
         ) : qrType === 'static' ? (
           /* Static QR Ticket View */
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#fff', width: '380px', border: '1px solid #f0f0f0', p: 4, pb: 6 }}>
-            {/* Branding */}
-            <Box sx={{ mb: 4, textAlign: 'center' }}>
-              <img src={logo} alt="PNB Logo" style={{ height: 48 }} />
-              <Typography sx={{ color: '#595959', fontSize: '9px', fontWeight: 600 }}>UPI ID : {merchantVpa}</Typography>
-            </Box>
-
-            {/* Merchant Name */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3.5 }}>
-              <Box sx={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#d9d9d9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <User size={20} color="#fff" />
-              </Box>
-              <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600 }}>{merchantName}</Typography>
-            </Box>
-
-            {/* The QR Code image */}
+          {/* The QR Code image */}
             <Box
               sx={{
                 width: '260px',
@@ -311,6 +297,11 @@ export default function QrDetails() {
                 <Button variant="contained" onClick={handleDownload} sx={{ backgroundColor: COLORS.PRIMARY, mb: 4 }}>
                   Download QR Code
                 </Button>
+                {/* Payment brandings */}
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '10px', color: '#8c8c8c', fontWeight: 700 }}>POWERED BY</Typography>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" style={{ height: 32 }} />
+                </Box>
               </Box>
             </Box>
           )
