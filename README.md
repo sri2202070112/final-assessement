@@ -60,13 +60,14 @@ This page allows merchants to view the current terminal language and remotely in
     *   **Read-only Fields:** Serial Number and VPA fields are configured as read-only to prevent accidental modification during the language update process.
 
 ### 4. QR Details (The "Payment Generator")
-Where merchants create those square codes you scan with your phone.
-*   **What's happening:** Merchant can pick between a "Static QR" (always the same) or a "Dynamic QR" (linked to a specific amount).
-*   **API Interaction 📡:** 
-    *   `Download Utility`: Fetches the QR image for local saving and printing.
+This page allows merchants to view and generate UPI-compliant QR codes for their storefronts.
+*   **What's happening:** Merchants can choose between a **Static QR** (general storefront payment) or a **Dynamic QR** (pre-configured for a specific transaction amount).
+*   **API Interactions 📡:** 
+    *   `VITE_QR_BASE_64`: Converts a constructed UPI intent string (containing VPA, Name, and Transaction IDs) into a secure base64-encoded image.
 *   **UI Logic ✨:** 
-    *   **Validation:** If you try to enter an amount over ₹ 1,00,000, the app shows an error message.
-    *   **Countdown Timer:** For enhanced security, Dynamic QRs are valid for 5 minutes, monitored by a real-time countdown clock.
+    *   **Live Data Sync:** The Static QR is automatically generated using real merchant data (VPA and Name) from the session store.
+    *   **Validation & Expiry:** Dynamic QRs include amount validation (capped at ₹ 1,00,000) and a real-time 5-minute countdown timer for session security.
+    *   **Base64 Rendering:** The system handles raw base64 image data from the API to display high-resolution QR codes without external image dependencies.
 
 ---
 
