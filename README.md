@@ -1,48 +1,88 @@
-# My PNB Merchant Project Journey 🚀
+# PNB Merchant Dashboard 🚀
 
-I wanted to write down how I actually built this app. Honestly, when I started, I was pretty overwhelmed with all the bank terminology and encryption stuff, but I’m really proud of how it turned out. It looks super professional, but I kept the code clean and commented so I don't forget how I did it!
+The **PNB Merchant Dashboard** is a comprehensive, secure web application designed for merchants to manage their business operations efficiently. This platform allows merchants to monitor real-time transaction data, generate dynamic payment QR codes, manage multiple VPA IDs, and remotely update terminal machine settings (such as language) directly from the browser.
 
----
-
-### First thing I had to handle: The "Secret Coder" (Security)
-The biggest challenge was security. Since this is for a bank, you can't just send information around in plain text. I used a tool called `Crypto-JS` to "scramble" (encrypt) everything. Every time my app talks to the server, it puts the data through this secret coder so only the bank can understand it. 
-
-I also had to deal with an "Access Token." Think of it like a digital key that the server gives me when I log in. I made sure the app "holds onto" this key so I don't have to keep logging back in every time I switch pages.
-
-### Keeping the keys safe 🗝️
-I learned the hard way that you should **never** put secret keys or server addresses directly in your code. So, I used two special files:
-*   **The `.env` file:** This is like my locked safe. I keep the really secret stuff here, like the encryption keys.
-*   **The `config.ts` file:** This is my "Master of Keys." It goes into the safe, grabs the secrets, and lets the rest of the app use them. If I ever need to move to a new server, I only change it once in the safe!
-
-### Making it look "PNB" Official
-I used a few custom images to make the app feel real:
-*   The **pnb-logo** is at the top of the sidebar so merchants know they're in the right place.
-*   I added a custom **Avatar** (a cool Memoji with braids and glasses) for the user profile. It just makes the dashboard feel more like a personal app rather than a boring bank tool.
-*   I also used a small **Blur background** logo for when the sidebar is closed up—it keeps things looking tidy.
-
-### The Dashboard: Where everything happens 📈
-This was my favorite part to build! It looks simple, but it’s doing a lot:
-*   **Fetching the Shops:** I wrote code that takes the user's phone number and asks the bank for all the shops (VPAs) associated with them.
-*   **Doing the Math:** Once I get the transaction list, I wrote a loop to add up all the amounts and count how many payments were made today. It's cool to see real numbers show up on the screen!
-
-### The "Flicker" problem and how I fixed it (Skeletons)
-One thing that really bugged me was how the screen would look empty for a split second while waiting for the data. I fixed this by adding **Skeletons**. 
-
-Instead of a blank white box, you see a grey, shimmering shape that looks like the data is about to arrive. I also made sure they shimmer for at least **800 milliseconds**—I found that if they disappear too fast, it looks glitchy. Now, everything stays in place and "resolves" together perfectly. It feels much more premium now.
-
-### Reports and Language Updates 🌍
-*   **Reports:** I built a big table that shows every single payment. I even added a download button so the merchant can get a CSV file for their records.
-*   **Language Update:** This was tricky because I had to talk directly to the terminal machine. If the update is still processing, I made the status icon turn **Yellow**, and if it's done, it turns **Green**. 
-
-### The "Global Notebook"
-I used something called a "Global Store" (and some `localStorage`) to make the app remember things. For example, if you pick a specific shop on the dashboard and then refresh the page, the app "remembers" it in its notebook so you don't have to pick it again.
+Built with a focus on security and high-fidelity user experience, this dashboard streamlines the interaction between merchants and their payment infrastructure.
 
 ---
 
-**What I used to build this:**
-*   **React & Vite:** These are the main engines that make the app run fast.
-*   **Material UI (MUI):** This gave me all the cool buttons, inputs, and the shimmering skeletons.
-*   **Lucide & Ant Design Icons:** For all the professional-looking icons.
-*   **Crypto-JS:** My secret weapon for the encryption part.
+## 🛠️ Tech Stack
 
-I'm really happy with how this project came together! If I can build this, I feel like I'm finally starting to get the hang of React. 💻🎉
+*   **React & Vite:** The core framework for a high-performance, reactive user interface.
+*   **TypeScript:** Type-safety throughout the codebase to ensure reliability and catch errors during development.
+*   **Material UI (MUI):** A comprehensive component library used for professional buttons, cards, and shimmer skeletons.
+*   **Lucide React:** A versatile collection of modern icons for enhanced visual cues.
+*   **Crypto-JS:** Robust encryption and decryption tools to secure sensitive banking data.
+*   **React OIDC Context:** Secure implementation of OpenID Connect for merchant authentication.
+
+---
+
+## 🗝️ System Security
+
+Security is integrated at every level of the application:
+
+1.  **Environment Configuration (`.env`):** Critical encryption keys and sensitive endpoints are stored in an environment file, ensuring they are excluded from version control.
+2.  **Centralized Config (`config.ts`):** A centralized configuration manager handles secret retrieval and provides them to the application securely.
+
+**Data Encryption:** All outbound data is encrypted using `Crypto-JS` before reaching the server. This ensures that even if data is intercepted, it remains unreadable to unauthorized parties.
+
+---
+
+## 📺 Page-by-Page Breakdown
+
+### 1. The Dashboard (The "At a Glance" View)
+This is the first thing a merchant sees.
+*   **What's happening:** It shows the total number of payments and the total money earned today.
+*   **API Interactions 📡:** 
+    *   `VITE_FETCH_USER_BY_ID`: Retrieves all shop variants (VPA IDs) registered to the merchant's mobile number.
+    *   `VITE_FETCH_REPORT`: Retrieves the transaction list for today/yesterday to calculate the summary metrics.
+*   **UI Logic ✨:** 
+    *   **VPA Selector:** A custom dropdown to switch between different shops.
+    *   **Shimmer Effect:** Skeletons are utilized with a controlled 800ms duration to ensure a smooth loading experience while awaiting server responses.
+
+### 2. Transaction Reports (The "History Book")
+A comprehensive table for merchants to track every single payment.
+*   **What's happening:** Merchants can filter payments by date (Today/Monthly/Custom Range).
+*   **API Interaction 📡:** 
+    *   `VITE_FETCH_REPORT`: Fetches a comprehensive list of payments based on selected start and end dates.
+*   **UI Logic ✨:** 
+    *   **Pagination:** To handle large datasets efficiently, the system displays 10 records per page with navigable controls.
+    *   **CSV Download:** A dedicated utility exports the current data view into a compatible Excel/CSV format.
+
+### 3. Language Update (The "Remote Control")
+This page allows merchants to view the current terminal language and remotely initiate updates to the device.
+*   **API Interactions 📡:** 
+    *   `VITE_FETCH_CURRENT_LANGUAGE`: Retrieves the current language setting of the terminal using its serial number.
+    *   `VITE_FETCH_ALL_LANGUAGE`: Fetches the list of all languages supported by the terminal device.
+    *   `VITE_UPDATE_LANGUAGE`: Sends a secure command to remotely change the device language.
+*   **UI Logic ✨:** 
+    *   **Status Indicators:** If the update is "Success," you see a green circle. If the server says it's "Going on," you see a yellow circle.
+    *   **Read-only Fields:** Serial Number and VPA fields are configured as read-only to prevent accidental modification during the language update process.
+
+### 4. QR Details (The "Payment Generator")
+Where merchants create those square codes you scan with your phone.
+*   **What's happening:** Merchant can pick between a "Static QR" (always the same) or a "Dynamic QR" (linked to a specific amount).
+*   **API Interaction 📡:** 
+    *   `Download Utility`: Fetches the QR image for local saving and printing.
+*   **UI Logic ✨:** 
+    *   **Validation:** If you try to enter an amount over ₹ 1,00,000, the app shows an error message.
+    *   **Countdown Timer:** For enhanced security, Dynamic QRs are valid for 5 minutes, monitored by a real-time countdown clock.
+
+---
+
+## 💾 Data Persistence (Global Store)
+
+The application uses a centralized store (`store.ts`) combined with `localStorage` to maintain state across sessions:
+*   **Persistent Selection:** Merchant preferences, such as the selected VPA ID, are remembered when navigating between the Dashboard and Reports.
+*   **Session Continuity:** The application checks local storage upon reload to maintain active authentication and state.
+
+---
+
+## 🚀 UX & Performance Implementation
+
+*   **Optimized Loading:** To prevent jarring UI shifts, shimmering skeletons are implemented with a controlled 800ms fade-out, providing a premium feel.
+*   **End-to-End Security:** Complete request-response encryption ensures data integrity is never compromised.
+
+---
+
+**PNB Merchant Dashboard - Efficient. Secure. Seamless.**
