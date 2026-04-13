@@ -13,6 +13,10 @@ import { User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { COLORS } from '../../theme/color';
 import logo from '../../assets/logo.png';
+import { useAuth } from 'react-oidc-context';
+import { decryptRequest, encryptResponse } from '../../utils/crypto';
+import { ENCRYPTION_KEY, QR_BASE_64, PASS_KEY } from '../../config/config';
+import { store } from '../../utils/store';
 
 // This is the page where merchants can create and see their payment QR codes
 export default function QrDetails() {
@@ -24,6 +28,12 @@ export default function QrDetails() {
   const [timeLeft, setTimeLeft] = useState(0); // Countdown for when the dynamic QR expires
   const [errorText, setErrorText] = useState(''); // Error messages like "Please enter a number"
   const [isPageLoading, setIsPageLoading] = useState(true); // Loading state for consistent shimmer
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null); // Real base64 QR from API
+
+  const auth = useAuth();
+  const userDetails = store.getUserDetails();
+  const merchantVpa = userDetails?.vpa_id || 'N/A';
+  const merchantName = userDetails?.beneficiary_name || userDetails?.merchant_name || 'Merchant';
 
   // This part handles the countdown timer for the Dynamic QR (e.g. 5:00, 4:59...)
   useEffect(() => {
@@ -46,12 +56,49 @@ export default function QrDetails() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Initial load shimmer
+  // Initial load shimmer & fetch static QR
   useEffect(() => {
-    setIsPageLoading(true);
-    const timer = setTimeout(() => setIsPageLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+    if (auth.isAuthenticated && qrType === 'static') {
+      const upiString = `upi://pay?pa=${merchantVpa}&pn=${encodeURIComponent(merchantName)}&mc=5411&tid=STAT${Date.now()}`;
+      generateQRCode(upiString);
+    } else {
+      setIsPageLoading(true);
+      const timer = setTimeout(() => setIsPageLoading(false), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [auth.isAuthenticated, qrType]);
+
+  const generateQRCode = async (upiString: string) => {
+    try {
+      setIsPageLoading(true);
+      const rawPayload = { qrString: upiString };
+      const encryptedData = encryptResponse(JSON.stringify(rawPayload), ENCRYPTION_KEY);
+
+      const response = await fetch(QR_BASE_64, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': auth.user?.access_token || '',
+          'Pass_key': PASS_KEY
+        },
+        body: JSON.stringify({ RequestData: encryptedData }),
+      });
+
+      const jsonResponse = await response.json();
+      if (jsonResponse.ResponseData) {
+        const decryptedData = decryptRequest(jsonResponse.ResponseData, ENCRYPTION_KEY);
+        const parsedData = JSON.parse(decryptedData);
+        if (parsedData.base64Image) {
+          setQrImageUrl(`data:image/png;base64,${parsedData.base64Image}`);
+          setIsGenerated(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error generating QR:', error);
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
 
   // This checks if the user typed a valid number for the amount
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,19 +140,30 @@ export default function QrDetails() {
 
   // This lets the merchant download the QR code so they can print it
   const handleDownload = async () => {
+    const downloadUrl = qrType === 'static' ? qrImageUrl : 'https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg';
+    if (!downloadUrl) return;
+
     try {
-      // We fetch the QR image from the server
-      const response = await fetch('https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg');
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      let targetUrl = downloadUrl;
+      
+      // If it's a dummy static URL, we need to fetch it first to get a blob
+      if (qrType === 'dynamic') {
+        const response = await fetch(downloadUrl);
+        const blob = await response.blob();
+        targetUrl = window.URL.createObjectURL(blob);
+      }
+
       const link = document.createElement('a');
-      link.href = url;
+      link.href = targetUrl;
       // Name the file nicely so the merchant can find it later
-      link.download = `PNB_QR_${qrType}_${new Date().getTime()}.svg`;
+      link.download = `PNB_QR_${qrType}_${new Date().getTime()}.${qrType === 'static' ? 'png' : 'svg'}`;
       document.body.appendChild(link);
       link.click(); // Trigger the actual download
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      
+      if (qrType === 'dynamic') {
+        window.URL.revokeObjectURL(targetUrl);
+      }
     } catch (error) {
       console.error('Oops! Download failed:', error);
     }
@@ -114,10 +172,7 @@ export default function QrDetails() {
   // If the user switches between Static/Dynamic, hide the old QR code
   useEffect(() => {
     setIsGenerated(false);
-    if (qrType === 'static') {
-      setIsPageLoading(true);
-      setTimeout(() => setIsPageLoading(false), 800);
-    }
+    setQrImageUrl(null);
   }, [qrType]);
 
   return (
@@ -186,7 +241,7 @@ export default function QrDetails() {
             {/* Branding */}
             <Box sx={{ mb: 4, textAlign: 'center' }}>
               <img src={logo} alt="PNB Logo" style={{ height: 48 }} />
-              <Typography sx={{ color: '#595959', fontSize: '9px', fontWeight: 600 }}>UPI ID : 9952785870m@pnb</Typography>
+              <Typography sx={{ color: '#595959', fontSize: '9px', fontWeight: 600 }}>UPI ID : {merchantVpa}</Typography>
             </Box>
 
             {/* Merchant Name */}
@@ -194,13 +249,23 @@ export default function QrDetails() {
               <Box sx={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#d9d9d9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <User size={20} color="#fff" />
               </Box>
-              <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600 }}>MYMUBI FOOD COURT</Typography>
+              <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600 }}>{merchantName}</Typography>
             </Box>
 
             {/* The QR Code image */}
-            <Box sx={{ width: '260px', height: '260px', mb: 3, backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg)', backgroundSize: 'contain' }} />
+            <Box
+              sx={{
+                width: '260px',
+                height: '260px',
+                mb: 3,
+                backgroundImage: qrImageUrl ? `url(${qrImageUrl})` : 'none',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center'
+              }}
+            />
 
-            <Button variant="contained" onClick={handleDownload} sx={{ backgroundColor: COLORS.PRIMARY, mb: 6 }}>
+            <Button variant="contained" onClick={handleDownload} sx={{ backgroundColor: COLORS.PRIMARY, mb: 6 }} disabled={!qrImageUrl}>
               Download QR Code
             </Button>
             
@@ -222,11 +287,21 @@ export default function QrDetails() {
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3.5 }}>
                 <Box sx={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: '#d9d9d9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><User size={20} color="#fff" /></Box>
-                <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600 }}>MYMUBI FOOD COURT</Typography>
+                <Typography sx={{ color: '#1a1a1a', fontSize: '15px', fontWeight: 600 }}>John Doe</Typography>
               </Box>
 
               {/* The QR code for this specific amount */}
-              <Box sx={{ width: '260px', height: '260px', mb: 3, backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg)', backgroundSize: 'contain' }} />
+              <Box
+                sx={{
+                  width: '260px',
+                  height: '260px',
+                  mb: 3,
+                  backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg)',
+                  backgroundSize: 'contain',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'center'
+                }}
+              />
 
               <Box sx={{ textAlign: 'center' }}>
                 {/* Real-time countdown clock */}

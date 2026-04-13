@@ -12,3 +12,4 @@ export const FETCH_ALL_LANGUAGE = import.meta.env.VITE_FETCH_ALL_LANGUAGE;
 export const FETCH_CURRENT_LANGUAGE = import.meta.env.VITE_FETCH_CURRENT_LANGUAGE;
 export const FETCH_REPORT = import.meta.env.VITE_FETCH_REPORT;
 export const UPDATE_LANGUAGE = import.meta.env.VITE_UPDATE_LANGUAGE;
+export const QR_BASE_64 = import.meta.env.VITE_QR_BASE_64;
